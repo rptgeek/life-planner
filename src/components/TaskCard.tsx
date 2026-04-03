@@ -1,22 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical } from 'lucide-react'
-import { Task, Category } from '@/lib/types'
+import { Check, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical, Pencil } from 'lucide-react'
+import { Task, Category, Role } from '@/lib/types'
 import { format } from 'date-fns'
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
 
 interface TaskCardProps {
   task: Task
+  orderNum: number
   categories: Category[]
+  roles: Role[]
   dragHandleProps?: DraggableProvidedDragHandleProps | null
   onToggle: (id: string, completed: boolean) => void
   onDelete: (id: string) => void
   onUpdate: (id: string, updates: Partial<Task>) => void
 }
 
-export default function TaskCard({ task, categories, dragHandleProps, onToggle, onDelete, onUpdate }: TaskCardProps) {
+export default function TaskCard({ task, orderNum, categories, roles, dragHandleProps, onToggle, onDelete, onUpdate }: TaskCardProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleDraft, setTitleDraft] = useState(task.title)
 
   const priorityStyles = {
     A: 'border-l-red-500 bg-red-50/50',
@@ -30,17 +34,38 @@ export default function TaskCard({ task, categories, dragHandleProps, onToggle, 
     C: 'bg-blue-100 text-blue-700',
   }
 
+  const saveTitle = () => {
+    const trimmed = titleDraft.trim()
+    if (trimmed && trimmed !== task.title) {
+      onUpdate(task.id, { title: trimmed })
+    } else {
+      setTitleDraft(task.title)
+    }
+    setEditingTitle(false)
+  }
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') saveTitle()
+    if (e.key === 'Escape') { setTitleDraft(task.title); setEditingTitle(false) }
+  }
+
   return (
     <div className={`
       border-l-4 rounded-lg border border-slate-200 transition-all duration-200
       ${priorityStyles[task.priority]}
       ${task.completed ? 'opacity-50' : ''}
     `}>
-      <div className="flex items-center gap-3 p-3">
+      <div className="flex items-center gap-2 p-3">
         {/* Drag handle */}
         <div {...dragHandleProps} className="text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing flex-shrink-0">
           <GripVertical size={16} />
         </div>
+
+        {/* Order number */}
+        <span className={`text-xs font-bold flex-shrink-0 w-6 text-center ${priorityBadge[task.priority]} rounded px-1`}>
+          {task.priority}{orderNum}
+        </span>
+
         {/* Checkbox */}
         <button
           onClick={() => onToggle(task.id, !task.completed)}
@@ -56,9 +81,31 @@ export default function TaskCard({ task, categories, dragHandleProps, onToggle, 
 
         {/* Title */}
         <div className="flex-1 min-w-0">
-          <p className={`text-sm ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
-            {task.title}
-          </p>
+          {editingTitle ? (
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={e => setTitleDraft(e.target.value)}
+              onBlur={saveTitle}
+              onKeyDown={handleTitleKeyDown}
+              className="w-full text-sm outline-none bg-white border border-indigo-300 rounded px-2 py-0.5"
+            />
+          ) : (
+            <div className="flex items-center gap-1 group/title">
+              <p
+                className={`text-sm truncate ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}
+                onDoubleClick={() => { setTitleDraft(task.title); setEditingTitle(true) }}
+              >
+                {task.title}
+              </p>
+              <button
+                onClick={() => { setTitleDraft(task.title); setEditingTitle(true) }}
+                className="opacity-0 group-hover/title:opacity-100 text-slate-300 hover:text-indigo-500 flex-shrink-0 transition-opacity"
+              >
+                <Pencil size={11} />
+              </button>
+            </div>
+          )}
           {task.goal && (
             <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
               <Link2 size={10} />
@@ -67,11 +114,6 @@ export default function TaskCard({ task, categories, dragHandleProps, onToggle, 
           )}
         </div>
 
-        {/* Priority badge */}
-        <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${priorityBadge[task.priority]}`}>
-          {task.priority}
-        </span>
-
         {/* Category badge */}
         {task.category && (
           <span
@@ -79,6 +121,16 @@ export default function TaskCard({ task, categories, dragHandleProps, onToggle, 
             style={{ backgroundColor: task.category.color + '20', color: task.category.color }}
           >
             {task.category.name}
+          </span>
+        )}
+
+        {/* Role badge */}
+        {task.role && (
+          <span
+            className="text-xs px-2 py-0.5 rounded-full whitespace-nowrap hidden sm:inline"
+            style={{ backgroundColor: task.role.color + '20', color: task.role.color }}
+          >
+            {task.role.name}
           </span>
         )}
 
@@ -140,6 +192,20 @@ export default function TaskCard({ task, categories, dragHandleProps, onToggle, 
                 <option value="">No category</option>
                 {categories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+
+            {/* Role change */}
+            {roles.length > 0 && (
+              <select
+                value={task.role_id || ''}
+                onChange={e => onUpdate(task.id, { role_id: e.target.value || null })}
+                className="text-xs border border-slate-200 rounded px-1.5 py-1 outline-none bg-white"
+              >
+                <option value="">No role</option>
+                {roles.map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
               </select>
             )}

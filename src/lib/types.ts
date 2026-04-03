@@ -16,6 +16,17 @@ export interface Category {
   created_at: string
 }
 
+export interface Role {
+  id: string
+  user_id: string
+  category_id: string | null
+  name: string
+  color: string
+  sort_order: number
+  created_at: string
+  category?: Category
+}
+
 export interface Value {
   id: string
   user_id: string
@@ -29,6 +40,7 @@ export interface Goal {
   id: string
   user_id: string
   category_id: string | null
+  role_id: string | null
   parent_goal_id: string | null
   title: string
   description: string | null
@@ -38,6 +50,7 @@ export interface Goal {
   created_at: string
   updated_at: string
   category?: Category
+  role?: Role
   children?: Goal[]
   tasks?: Task[]
 }
@@ -47,6 +60,7 @@ export interface Task {
   user_id: string
   category_id: string | null
   goal_id: string | null
+  role_id: string | null
   title: string
   description: string | null
   priority: 'A' | 'B' | 'C'
@@ -59,6 +73,7 @@ export interface Task {
   updated_at: string
   category?: Category
   goal?: Goal
+  role?: Role
 }
 
 export interface DailyReflection {

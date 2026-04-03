@@ -5,7 +5,7 @@ import { format, startOfWeek, addDays, subWeeks, addWeeks, isSameDay } from 'dat
 import { ChevronLeft, ChevronRight, Check, Calendar } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useUser } from '@/lib/hooks'
-import { Task } from '@/lib/types'
+import { Task, Role } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 
 export default function WeeklyPage() {
@@ -22,7 +22,7 @@ export default function WeeklyPage() {
     if (!user) return
     const { data } = await supabase
       .from('tasks')
-      .select('*, category:categories(*)')
+      .select('*, category:categories(*), role:roles(*)')
       .eq('user_id', user.id)
       .gte('scheduled_date', format(weekStart, 'yyyy-MM-dd'))
       .lte('scheduled_date', format(weekEnd, 'yyyy-MM-dd'))
@@ -45,6 +45,16 @@ export default function WeeklyPage() {
   }
 
   const stats = getCompletionStats()
+
+  // Role breakdown
+  const roleBreakdown = weekTasks.reduce((acc, t) => {
+    if (!t.role) return acc
+    const role = t.role as Role
+    if (!acc[role.id]) acc[role.id] = { name: role.name, color: role.color, count: 0, completed: 0 }
+    acc[role.id].count++
+    if (t.completed) acc[role.id].completed++
+    return acc
+  }, {} as Record<string, { name: string; color: string; count: number; completed: number }>)
 
   // Category breakdown
   const categoryBreakdown = weekTasks.reduce((acc, t) => {
@@ -113,6 +123,40 @@ export default function WeeklyPage() {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Role Balance */}
+      {Object.keys(roleBreakdown).length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Role Balance</h3>
+          <div className="space-y-2">
+            {Object.entries(roleBreakdown).map(([id, data]) => {
+              const pct = data.count > 0 ? Math.round((data.completed / data.count) * 100) : 0
+              const inactive = data.count === 0
+              return (
+                <div key={id} className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: data.color }} />
+                  <span className="text-xs text-slate-700 w-28 truncate">{data.name}</span>
+                  {inactive ? (
+                    <span className="text-xs text-amber-600 font-medium">No activity this week</span>
+                  ) : (
+                    <>
+                      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%`, backgroundColor: data.color }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-500 w-16 text-right">
+                        {data.completed}/{data.count}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

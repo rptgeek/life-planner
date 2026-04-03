@@ -53,9 +53,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Franklin Planner tagline */}
         <p className="text-center text-indigo-400/50 text-xs mt-8">
-          Inspired by the Franklin Planner system
+          Plan your life with intention
         </p>
       </div>
     </div>

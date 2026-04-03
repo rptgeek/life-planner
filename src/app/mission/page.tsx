@@ -37,7 +37,7 @@ export default function MissionPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Mission & Values</h1>
         <p className="text-sm text-slate-500 mt-1">
-          The foundation of your Franklin Planner. Everything flows from here.
+          The foundation of your Life Planner. Everything flows from here.
         </p>
       </div>
 

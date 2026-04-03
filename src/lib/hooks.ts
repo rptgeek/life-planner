@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from './supabase'
-import { Category, Goal, Task, Profile, DailyReflection, Value } from './types'
+import { Category, Goal, Task, Profile, DailyReflection, Value, Role } from './types'
 import { User } from '@supabase/supabase-js'
 
 const supabase = createClient()
@@ -105,6 +105,52 @@ export function useCategories() {
   return { categories, addCategory, updateCategory, deleteCategory, refetch: fetchCategories }
 }
 
+export function useRoles() {
+  const { user } = useUser()
+  const [roles, setRoles] = useState<Role[]>([])
+
+  const fetchRoles = useCallback(async () => {
+    if (!user) return
+    const { data } = await supabase
+      .from('roles')
+      .select('*, category:categories(*)')
+      .eq('user_id', user.id)
+      .order('sort_order')
+    setRoles(data || [])
+  }, [user])
+
+  useEffect(() => { fetchRoles() }, [fetchRoles])
+
+  const addRole = async (name: string, color: string, categoryId: string | null) => {
+    if (!user) return
+    const { data } = await supabase
+      .from('roles')
+      .insert({ user_id: user.id, name, color, category_id: categoryId || null, sort_order: roles.length })
+      .select('*, category:categories(*)')
+      .single()
+    if (data) setRoles(prev => [...prev, data])
+    return data
+  }
+
+  const updateRole = async (id: string, updates: Partial<Role>) => {
+    const { data } = await supabase
+      .from('roles')
+      .update(updates)
+      .eq('id', id)
+      .select('*, category:categories(*)')
+      .single()
+    if (data) setRoles(prev => prev.map(r => r.id === id ? data : r))
+    return data
+  }
+
+  const deleteRole = async (id: string) => {
+    await supabase.from('roles').delete().eq('id', id)
+    setRoles(prev => prev.filter(r => r.id !== id))
+  }
+
+  return { roles, addRole, updateRole, deleteRole, refetch: fetchRoles }
+}
+
 export function useGoals() {
   const { user } = useUser()
   const [goals, setGoals] = useState<Goal[]>([])
@@ -115,7 +161,7 @@ export function useGoals() {
     setLoading(true)
     const { data } = await supabase
       .from('goals')
-      .select('*, category:categories(*)')
+      .select('*, category:categories(*), role:roles(*)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
     setGoals(data || [])
@@ -129,7 +175,7 @@ export function useGoals() {
     const { data } = await supabase
       .from('goals')
       .insert({ ...goal, user_id: user.id })
-      .select('*, category:categories(*)')
+      .select('*, category:categories(*), role:roles(*)')
       .single()
     if (data) setGoals(prev => [data, ...prev])
     return data
@@ -140,7 +186,7 @@ export function useGoals() {
       .from('goals')
       .update(updates)
       .eq('id', id)
-      .select('*, category:categories(*)')
+      .select('*, category:categories(*), role:roles(*)')
       .single()
     if (data) setGoals(prev => prev.map(g => g.id === id ? data : g))
     return data
@@ -164,7 +210,7 @@ export function useTasks(dateFilter?: string) {
     setLoading(true)
     let query = supabase
       .from('tasks')
-      .select('*, category:categories(*), goal:goals(*)')
+      .select('*, category:categories(*), goal:goals(*), role:roles(*)')
       .eq('user_id', user.id)
 
     if (dateFilter) {
@@ -185,7 +231,7 @@ export function useTasks(dateFilter?: string) {
     const { data } = await supabase
       .from('tasks')
       .insert({ ...task, user_id: user.id })
-      .select('*, category:categories(*), goal:goals(*)')
+      .select('*, category:categories(*), goal:goals(*), role:roles(*)')
       .single()
     if (data) setTasks(prev => [...prev, data])
     return data
@@ -200,7 +246,7 @@ export function useTasks(dateFilter?: string) {
       .from('tasks')
       .update(updateData)
       .eq('id', id)
-      .select('*, category:categories(*), goal:goals(*)')
+      .select('*, category:categories(*), goal:goals(*), role:roles(*)')
       .single()
     if (data) setTasks(prev => prev.map(t => t.id === id ? data : t))
     return data

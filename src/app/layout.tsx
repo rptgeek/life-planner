@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Life Planner',
-  description: 'Franklin Planner-inspired goal and task tracking system',
+  description: 'Personal goal and task tracking system for a balanced, intentional life',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

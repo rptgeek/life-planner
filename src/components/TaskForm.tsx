@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Sparkles } from 'lucide-react'
-import { Category, Goal } from '@/lib/types'
+import { Category, Goal, Role } from '@/lib/types'
 import { autoCategorize } from '@/lib/categorize'
 
 interface TaskFormProps {
   categories: Category[]
   goals: Goal[]
+  roles: Role[]
   scheduledDate?: string
   onSubmit: (task: {
     title: string
@@ -15,18 +16,20 @@ interface TaskFormProps {
     priority: 'A' | 'B' | 'C'
     category_id: string | null
     goal_id: string | null
+    role_id: string | null
     scheduled_date: string | null
     due_date: string | null
   }) => Promise<void>
 }
 
-export default function TaskForm({ categories, goals, scheduledDate, onSubmit }: TaskFormProps) {
+export default function TaskForm({ categories, goals, roles, scheduledDate, onSubmit }: TaskFormProps) {
   const [expanded, setExpanded] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<'A' | 'B' | 'C'>('B')
   const [categoryId, setCategoryId] = useState<string>('')
   const [goalId, setGoalId] = useState<string>('')
+  const [roleId, setRoleId] = useState<string>('')
   const [dueDate, setDueDate] = useState('')
   const [autoSuggested, setAutoSuggested] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -54,6 +57,7 @@ export default function TaskForm({ categories, goals, scheduledDate, onSubmit }:
       priority,
       category_id: categoryId || null,
       goal_id: goalId || null,
+      role_id: roleId || null,
       scheduled_date: scheduledDate || null,
       due_date: dueDate || null,
     })
@@ -62,6 +66,7 @@ export default function TaskForm({ categories, goals, scheduledDate, onSubmit }:
     setPriority('B')
     setCategoryId('')
     setGoalId('')
+    setRoleId('')
     setDueDate('')
     setAutoSuggested(false)
     setExpanded(false)
@@ -117,7 +122,7 @@ export default function TaskForm({ categories, goals, scheduledDate, onSubmit }:
             className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-300"
           />
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {/* Priority */}
             <div>
               <label className="text-xs text-slate-500 block mb-1">Priority</label>
@@ -180,6 +185,21 @@ export default function TaskForm({ categories, goals, scheduledDate, onSubmit }:
                 onChange={e => setDueDate(e.target.value)}
                 className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
               />
+            </div>
+
+            {/* Role */}
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Role</label>
+              <select
+                value={roleId}
+                onChange={e => setRoleId(e.target.value)}
+                className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
+              >
+                <option value="">None</option>
+                {roles.map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 

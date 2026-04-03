@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { Target, Plus, ChevronDown, ChevronRight, Trash2, Check, ArrowRight } from 'lucide-react'
-import { useGoals, useCategories } from '@/lib/hooks'
+import { useGoals, useCategories, useRoles } from '@/lib/hooks'
 import { Goal } from '@/lib/types'
 
 export default function GoalsPage() {
   const { goals, addGoal, updateGoal, deleteGoal } = useGoals()
   const { categories } = useCategories()
+  const { roles } = useRoles()
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState<'all' | 'long_term' | 'short_term'>('all')
   const [expandedGoals, setExpandedGoals] = useState<Set<string>>(new Set())
@@ -17,6 +18,7 @@ export default function GoalsPage() {
   const [description, setDescription] = useState('')
   const [goalType, setGoalType] = useState<'long_term' | 'short_term'>('long_term')
   const [categoryId, setCategoryId] = useState('')
+  const [roleId, setRoleId] = useState('')
   const [parentGoalId, setParentGoalId] = useState('')
   const [targetDate, setTargetDate] = useState('')
 
@@ -42,12 +44,14 @@ export default function GoalsPage() {
       description: description.trim() || null,
       goal_type: goalType,
       category_id: categoryId || null,
+      role_id: roleId || null,
       parent_goal_id: parentGoalId || null,
       target_date: targetDate || null,
     })
     setTitle('')
     setDescription('')
     setTargetDate('')
+    setRoleId('')
     setParentGoalId('')
     setShowForm(false)
   }
@@ -111,7 +115,7 @@ export default function GoalsPage() {
             rows={2}
             className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-300"
           />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <div>
               <label className="text-xs text-slate-500 block mb-1">Type</label>
               <select
@@ -132,6 +136,17 @@ export default function GoalsPage() {
               >
                 <option value="">None</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Role</label>
+              <select
+                value={roleId}
+                onChange={e => setRoleId(e.target.value)}
+                className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
+              >
+                <option value="">None</option>
+                {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
             </div>
             <div>
@@ -220,6 +235,11 @@ export default function GoalsPage() {
                       {goal.category && (
                         <span className="text-xs" style={{ color: goal.category.color }}>
                           {goal.category.name}
+                        </span>
+                      )}
+                      {goal.role && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ backgroundColor: goal.role.color + '20', color: goal.role.color }}>
+                          {goal.role.name}
                         </span>
                       )}
                       {goal.target_date && (

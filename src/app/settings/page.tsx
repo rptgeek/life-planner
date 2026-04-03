@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, Trash2, Save, Palette, Settings as SettingsIcon } from 'lucide-react'
-import { useCategories, useProfile } from '@/lib/hooks'
+import { useCategories, useRoles, useProfile } from '@/lib/hooks'
 
 const COLOR_OPTIONS = [
   '#8b5cf6', '#ec4899', '#3b82f6', '#f59e0b', '#10b981',
@@ -12,13 +12,27 @@ const COLOR_OPTIONS = [
 
 export default function SettingsPage() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories()
+  const { roles, addRole, updateRole, deleteRole } = useRoles()
   const { profile, updateProfile } = useProfile()
+
+  // Category form state
   const [newName, setNewName] = useState('')
   const [newColor, setNewColor] = useState('#6366f1')
   const [showAdd, setShowAdd] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editColor, setEditColor] = useState('')
+
+  // Role form state
+  const [newRoleName, setNewRoleName] = useState('')
+  const [newRoleColor, setNewRoleColor] = useState('#6366f1')
+  const [newRoleCategoryId, setNewRoleCategoryId] = useState('')
+  const [showAddRole, setShowAddRole] = useState(false)
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null)
+  const [editRoleName, setEditRoleName] = useState('')
+  const [editRoleColor, setEditRoleColor] = useState('')
+
+  // Profile state
   const [displayName, setDisplayName] = useState('')
   const [editingProfile, setEditingProfile] = useState(false)
 
@@ -46,6 +60,28 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     await updateProfile({ display_name: displayName.trim() || null })
     setEditingProfile(false)
+  }
+
+  const handleAddRole = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newRoleName.trim()) return
+    await addRole(newRoleName.trim(), newRoleColor, newRoleCategoryId || null)
+    setNewRoleName('')
+    setNewRoleColor('#6366f1')
+    setNewRoleCategoryId('')
+    setShowAddRole(false)
+  }
+
+  const startEditRole = (id: string, name: string, color: string) => {
+    setEditingRoleId(id)
+    setEditRoleName(name)
+    setEditRoleColor(color)
+  }
+
+  const saveEditRole = async () => {
+    if (!editingRoleId || !editRoleName.trim()) return
+    await updateRole(editingRoleId, { name: editRoleName.trim(), color: editRoleColor })
+    setEditingRoleId(null)
   }
 
   return (
@@ -198,6 +234,132 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Roles */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700">Roles</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Define your life roles (e.g. Father, Husband, Leader)</p>
+          </div>
+          <button
+            onClick={() => setShowAddRole(!showAddRole)}
+            className="flex items-center gap-1 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
+          >
+            <Plus size={12} />
+            Add Role
+          </button>
+        </div>
+
+        {showAddRole && (
+          <form onSubmit={handleAddRole} className="mb-4 p-3 bg-slate-50 rounded-lg space-y-2">
+            <input
+              type="text"
+              value={newRoleName}
+              onChange={e => setNewRoleName(e.target.value)}
+              placeholder="Role name (e.g. Father, Leader)"
+              className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-300"
+              autoFocus
+            />
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Category (optional)</label>
+              <select
+                value={newRoleCategoryId}
+                onChange={e => setNewRoleCategoryId(e.target.value)}
+                className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
+              >
+                <option value="">None</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Color</label>
+              <div className="flex flex-wrap gap-1.5">
+                {COLOR_OPTIONS.map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setNewRoleColor(color)}
+                    className={`w-6 h-6 rounded-full transition-transform ${
+                      newRoleColor === color ? 'ring-2 ring-offset-1 ring-indigo-400 scale-110' : 'hover:scale-110'
+                    }`}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg">Add</button>
+              <button type="button" onClick={() => setShowAddRole(false)} className="text-xs text-slate-500 px-3 py-1.5">Cancel</button>
+            </div>
+          </form>
+        )}
+
+        <div className="space-y-2">
+          {roles.length === 0 && (
+            <p className="text-xs text-slate-400 text-center py-4">No roles yet. Add one to get started.</p>
+          )}
+          {roles.map(role => (
+            <div key={role.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg group">
+              {editingRoleId === role.id ? (
+                <>
+                  <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: editRoleColor }} />
+                  <input
+                    type="text"
+                    value={editRoleName}
+                    onChange={e => setEditRoleName(e.target.value)}
+                    className="flex-1 text-sm border border-slate-200 rounded px-2 py-1 outline-none focus:border-indigo-300"
+                    autoFocus
+                  />
+                  <div className="flex gap-1">
+                    {COLOR_OPTIONS.slice(0, 8).map(color => (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setEditRoleColor(color)}
+                        className={`w-4 h-4 rounded-full ${editRoleColor === color ? 'ring-1 ring-offset-1 ring-indigo-400' : ''}`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                  <button onClick={saveEditRole} className="text-green-600 hover:text-green-800 p-1">
+                    <Save size={14} />
+                  </button>
+                  <button onClick={() => setEditingRoleId(null)} className="text-slate-400 text-xs">Cancel</button>
+                </>
+              ) : (
+                <>
+                  <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: role.color }} />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm text-slate-700">{role.name}</span>
+                    {role.category && (
+                      <span className="ml-2 text-xs text-slate-400">({role.category.name})</span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => startEditRole(role.id, role.name, role.color)}
+                    className="opacity-0 group-hover:opacity-100 text-indigo-600 hover:text-indigo-800 text-xs transition-opacity"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`Delete "${role.name}" role? Goals and tasks in this role will become unassigned.`)) {
+                        deleteRole(role.id)
+                      }
+                    }}
+                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 p-1 transition-opacity"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* About */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-2">
@@ -205,7 +367,7 @@ export default function SettingsPage() {
           <h3 className="text-sm font-semibold text-slate-700">About Life Planner</h3>
         </div>
         <p className="text-xs text-slate-500">
-          Inspired by the Franklin Planner system. Built with Next.js, Supabase, and Tailwind CSS.
+          Built with Next.js, Supabase, and Tailwind CSS.
           Your data is stored securely in the cloud and synced across all your devices.
         </p>
       </div>

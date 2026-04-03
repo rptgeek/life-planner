@@ -2,9 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { format, addDays, subDays } from 'date-fns'
-import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Printer } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
-import { useTasks, useCategories, useGoals, useReflection, useProfile } from '@/lib/hooks'
+import { useTasks, useCategories, useGoals, useRoles, useReflection, useProfile } from '@/lib/hooks'
 import { Task } from '@/lib/types'
 import TaskForm from '@/components/TaskForm'
 import TaskCard from '@/components/TaskCard'
@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const { tasks, addTask, updateTask, deleteTask, reorderTasks } = useTasks(selectedDate)
   const { categories } = useCategories()
   const { goals } = useGoals()
+  const { roles } = useRoles()
   const { reflection, saveReflection } = useReflection(selectedDate)
   const { profile } = useProfile()
 
@@ -92,6 +93,17 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-slate-800">Daily Planner</h1>
         </div>
 
+        <div className="flex items-center gap-2 no-print">
+        {/* Print button */}
+        <button
+          onClick={() => window.print()}
+          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-sm hover:shadow transition-all"
+          title="Print daily plan"
+        >
+          <Printer size={14} />
+          Print
+        </button>
+
         {/* Date navigator */}
         <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 px-2 py-1.5 shadow-sm">
           <button
@@ -121,6 +133,18 @@ export default function DashboardPage() {
             </button>
           )}
         </div>
+        </div> {/* end no-print flex */}
+      </div>
+
+      {/* Print header — only visible when printing */}
+      <div className="hidden print:block print-header">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold">Daily Planner</h1>
+          <span className="text-sm">{format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')}</span>
+        </div>
+        {profile?.mission_statement && (
+          <div className="print-mission mt-2">&ldquo;{profile.mission_statement}&rdquo;</div>
+        )}
       </div>
 
       {/* Mission statement reminder */}
@@ -155,6 +179,7 @@ export default function DashboardPage() {
       <TaskForm
         categories={categories}
         goals={goals}
+        roles={roles}
         scheduledDate={selectedDate}
         onSubmit={handleAddTask}
       />
@@ -205,7 +230,9 @@ export default function DashboardPage() {
                             >
                               <TaskCard
                                 task={task}
+                                orderNum={index + 1}
                                 categories={categories}
+                                roles={roles}
                                 dragHandleProps={provided.dragHandleProps}
                                 onToggle={(id, completed) => updateTask(id, { completed })}
                                 onDelete={deleteTask}
