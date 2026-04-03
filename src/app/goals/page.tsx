@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Target, Plus, ChevronDown, ChevronRight, Trash2, Check, ArrowRight } from 'lucide-react'
+import { Target, Plus, ChevronDown, ChevronRight, Trash2, Check, ArrowRight, Pencil, Save, X } from 'lucide-react'
 import { useGoals, useCategories, useRoles } from '@/lib/hooks'
 import { Goal } from '@/lib/types'
 
@@ -12,6 +12,36 @@ export default function GoalsPage() {
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState<'all' | 'long_term' | 'short_term'>('all')
   const [expandedGoals, setExpandedGoals] = useState<Set<string>>(new Set())
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editCategoryId, setEditCategoryId] = useState('')
+  const [editRoleId, setEditRoleId] = useState('')
+  const [editTargetDate, setEditTargetDate] = useState('')
+  const [editGoalType, setEditGoalType] = useState<'long_term' | 'short_term'>('long_term')
+
+  const startEdit = (goal: Goal) => {
+    setEditingId(goal.id)
+    setEditTitle(goal.title)
+    setEditDescription(goal.description || '')
+    setEditCategoryId(goal.category_id || '')
+    setEditRoleId(goal.role_id || '')
+    setEditTargetDate(goal.target_date || '')
+    setEditGoalType(goal.goal_type)
+  }
+
+  const saveEdit = async () => {
+    if (!editingId || !editTitle.trim()) return
+    await updateGoal(editingId, {
+      title: editTitle.trim(),
+      description: editDescription.trim() || null,
+      category_id: editCategoryId || null,
+      role_id: editRoleId || null,
+      target_date: editTargetDate || null,
+      goal_type: editGoalType,
+    })
+    setEditingId(null)
+  }
 
   // Form state
   const [title, setTitle] = useState('')
@@ -213,6 +243,59 @@ export default function GoalsPage() {
             const expanded = expandedGoals.has(goal.id)
             return (
               <div key={goal.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                {editingId === goal.id ? (
+                  <div className="p-4 space-y-3">
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={e => setEditTitle(e.target.value)}
+                      className="w-full text-sm border border-indigo-300 rounded-lg px-3 py-2 outline-none font-medium"
+                      autoFocus
+                    />
+                    <textarea
+                      value={editDescription}
+                      onChange={e => setEditDescription(e.target.value)}
+                      placeholder="Description (optional)"
+                      rows={2}
+                      className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-300 resize-none"
+                    />
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div>
+                        <label className="text-xs text-slate-500 block mb-1">Type</label>
+                        <select value={editGoalType} onChange={e => setEditGoalType(e.target.value as 'long_term' | 'short_term')} className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none">
+                          <option value="long_term">Long-term</option>
+                          <option value="short_term">Short-term</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-500 block mb-1">Category</label>
+                        <select value={editCategoryId} onChange={e => setEditCategoryId(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none">
+                          <option value="">None</option>
+                          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-500 block mb-1">Role</label>
+                        <select value={editRoleId} onChange={e => setEditRoleId(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none">
+                          <option value="">None</option>
+                          {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-500 block mb-1">Target Date</label>
+                        <input type="date" value={editTargetDate} onChange={e => setEditTargetDate(e.target.value)} className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={saveEdit} className="flex items-center gap-1.5 bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-indigo-700">
+                        <Save size={12} /> Save
+                      </button>
+                      <button onClick={() => setEditingId(null)} className="flex items-center gap-1 text-xs text-slate-500 px-3 py-1.5 hover:bg-slate-100 rounded-lg">
+                        <X size={12} /> Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                 <div className="flex items-center gap-3 p-4">
                   {children.length > 0 && (
                     <button onClick={() => toggleExpand(goal.id)} className="text-slate-400 hover:text-slate-600">
@@ -233,44 +316,33 @@ export default function GoalsPage() {
                     )}
                     <div className="flex items-center gap-3 mt-1">
                       {goal.category && (
-                        <span className="text-xs" style={{ color: goal.category.color }}>
-                          {goal.category.name}
-                        </span>
+                        <span className="text-xs" style={{ color: goal.category.color }}>{goal.category.name}</span>
                       )}
                       {goal.role && (
-                        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ backgroundColor: goal.role.color + '20', color: goal.role.color }}>
-                          {goal.role.name}
-                        </span>
+                        <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ backgroundColor: goal.role.color + '20', color: goal.role.color }}>{goal.role.name}</span>
                       )}
                       {goal.target_date && (
-                        <span className="text-xs text-slate-400">
-                          Target: {new Date(goal.target_date).toLocaleDateString()}
-                        </span>
+                        <span className="text-xs text-slate-400">Target: {new Date(goal.target_date).toLocaleDateString()}</span>
                       )}
                       {children.length > 0 && (
-                        <span className="text-xs text-slate-400">
-                          {children.length} sub-goal{children.length !== 1 ? 's' : ''}
-                        </span>
+                        <span className="text-xs text-slate-400">{children.length} sub-goal{children.length !== 1 ? 's' : ''}</span>
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={() => updateGoal(goal.id, { status: 'completed' })}
-                    className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
-                    title="Mark completed"
-                  >
+                  <button onClick={() => startEdit(goal)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
+                    <Pencil size={14} />
+                  </button>
+                  <button onClick={() => updateGoal(goal.id, { status: 'completed' })} className="p-1.5 text-green-500 hover:bg-green-50 rounded-lg transition-colors" title="Mark completed">
                     <Check size={16} />
                   </button>
-                  <button
-                    onClick={() => deleteGoal(goal.id)}
-                    className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"
-                  >
+                  <button onClick={() => deleteGoal(goal.id)} className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors">
                     <Trash2 size={14} />
                   </button>
                 </div>
+                )}
 
-                {/* Child goals */}
-                {expanded && children.length > 0 && (
+                {/* Child goals — only show when not editing */}
+                {editingId !== goal.id && expanded && children.length > 0 && (
                   <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-2 space-y-2">
                     {children.map(child => (
                       <div key={child.id} className="flex items-center gap-2 py-1.5 px-2">
