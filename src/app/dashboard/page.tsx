@@ -2,15 +2,17 @@
 
 import { useState, useMemo } from 'react'
 import { format, addDays, subDays } from 'date-fns'
-import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Printer } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Printer, Sparkles } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { useTasks, useCategories, useGoals, useRoles, useReflection, useProfile } from '@/lib/hooks'
 import { Task } from '@/lib/types'
 import TaskForm from '@/components/TaskForm'
 import TaskCard from '@/components/TaskCard'
+import PlanMyDay from '@/components/PlanMyDay'
 
 export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [showPlanMyDay, setShowPlanMyDay] = useState(false)
   const { tasks, addTask, updateTask, deleteTask, reorderTasks } = useTasks(selectedDate)
   const { categories } = useCategories()
   const { goals } = useGoals()
@@ -94,6 +96,15 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-2 no-print">
+        {/* Plan My Day button */}
+        <button
+          onClick={() => setShowPlanMyDay(true)}
+          className="flex items-center gap-1.5 text-xs text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-xl shadow-sm transition-all font-medium"
+        >
+          <Sparkles size={14} />
+          Plan My Day
+        </button>
+
         {/* Print button */}
         <button
           onClick={() => window.print()}
@@ -286,6 +297,18 @@ export default function DashboardPage() {
           />
         </div>
       </div>
+
+      {/* Plan My Day modal */}
+      {showPlanMyDay && (
+        <PlanMyDay
+          selectedDate={selectedDate}
+          onClose={() => setShowPlanMyDay(false)}
+          onTasksAdded={() => {
+            setShowPlanMyDay(false)
+            window.location.reload()
+          }}
+        />
+      )}
     </div>
   )
 }
