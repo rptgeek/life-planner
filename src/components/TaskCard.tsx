@@ -1,18 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Trash2, ChevronDown, ChevronUp, Link2, Calendar } from 'lucide-react'
-import { Task } from '@/lib/types'
+import { Check, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical } from 'lucide-react'
+import { Task, Category } from '@/lib/types'
 import { format } from 'date-fns'
+import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
 
 interface TaskCardProps {
   task: Task
+  categories: Category[]
+  dragHandleProps?: DraggableProvidedDragHandleProps | null
   onToggle: (id: string, completed: boolean) => void
   onDelete: (id: string) => void
   onUpdate: (id: string, updates: Partial<Task>) => void
 }
 
-export default function TaskCard({ task, onToggle, onDelete, onUpdate }: TaskCardProps) {
+export default function TaskCard({ task, categories, dragHandleProps, onToggle, onDelete, onUpdate }: TaskCardProps) {
   const [showDetails, setShowDetails] = useState(false)
 
   const priorityStyles = {
@@ -34,6 +37,10 @@ export default function TaskCard({ task, onToggle, onDelete, onUpdate }: TaskCar
       ${task.completed ? 'opacity-50' : ''}
     `}>
       <div className="flex items-center gap-3 p-3">
+        {/* Drag handle */}
+        <div {...dragHandleProps} className="text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing flex-shrink-0">
+          <GripVertical size={16} />
+        </div>
         {/* Checkbox */}
         <button
           onClick={() => onToggle(task.id, !task.completed)}
@@ -105,7 +112,7 @@ export default function TaskCard({ task, onToggle, onDelete, onUpdate }: TaskCar
             )}
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center gap-2 pt-1 flex-wrap">
             {/* Priority change */}
             <div className="flex gap-1">
               {(['A', 'B', 'C'] as const).map(p => (
@@ -122,6 +129,20 @@ export default function TaskCard({ task, onToggle, onDelete, onUpdate }: TaskCar
                 </button>
               ))}
             </div>
+
+            {/* Category change */}
+            {categories.length > 0 && (
+              <select
+                value={task.category_id || ''}
+                onChange={e => onUpdate(task.id, { category_id: e.target.value || null })}
+                className="text-xs border border-slate-200 rounded px-1.5 py-1 outline-none bg-white"
+              >
+                <option value="">No category</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
 
             <div className="flex-1" />
 

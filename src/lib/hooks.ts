@@ -211,7 +211,15 @@ export function useTasks(dateFilter?: string) {
     setTasks(prev => prev.filter(t => t.id !== id))
   }
 
-  return { tasks, loading, addTask, updateTask, deleteTask, refetch: fetchTasks }
+  const reorderTasks = (reordered: Task[]) => {
+    setTasks(reordered)
+    // Persist sort_order and priority changes in background
+    reordered.forEach((task, index) => {
+      supabase.from('tasks').update({ sort_order: index, priority: task.priority }).eq('id', task.id)
+    })
+  }
+
+  return { tasks, loading, addTask, updateTask, deleteTask, reorderTasks, refetch: fetchTasks }
 }
 
 export function useReflection(date: string) {

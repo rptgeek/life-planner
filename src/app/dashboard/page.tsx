@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { format, addDays, subDays } from 'date-fns'
 import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon } from 'lucide-react'
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { useTasks, useCategories, useGoals, useReflection, useProfile } from '@/lib/hooks'
 import { Task } from '@/lib/types'
 import TaskForm from '@/components/TaskForm'
@@ -10,7 +11,7 @@ import TaskCard from '@/components/TaskCard'
 
 export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
-  const { tasks, addTask, updateTask, deleteTask } = useTasks(selectedDate)
+  const { tasks, addTask, updateTask, deleteTask, reorderTasks } = useTasks(selectedDate)
   const { categories } = useCategories()
   const { goals } = useGoals()
   const { reflection, saveReflection } = useReflection(selectedDate)
@@ -18,7 +19,7 @@ export default function DashboardPage() {
 
   const isToday = selectedDate === format(new Date(), 'yyyy-MM-dd')
 
-  // Group tasks by priority
+  // Group tasks by priority, sorted by sort_order
   const grouped = useMemo(() => {
     const a: Task[] = []
     const b: Task[] = []
@@ -34,7 +35,6 @@ export default function DashboardPage() {
   const completedCount = tasks.filter(t => t.completed).length
   const totalCount = tasks.length
 
-  // Greeting based on time of day
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return { text: 'Good morning', icon: Sunrise }
@@ -45,6 +45,37 @@ export default function DashboardPage() {
 
   const handleAddTask = async (task: Parameters<typeof addTask>[0]) => {
     await addTask(task as Partial<Task>)
+  }
+
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination, draggableId } = result
+    if (!destination) return
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return
+
+    const sourcePriority = source.droppableId as 'A' | 'B' | 'C'
+    const destPriority = destination.droppableId as 'A' | 'B' | 'C'
+
+    // Clone groups
+    const newGrouped = {
+      A: [...grouped.A],
+      B: [...grouped.B],
+      C: [...grouped.C],
+    }
+
+    // Remove from source group
+    const [movedTask] = newGrouped[sourcePriority].splice(source.index, 1)
+
+    // Insert into destination group with updated priority
+    newGrouped[destPriority].splice(destination.index, 0, { ...movedTask, priority: destPriority })
+
+    // Rebuild full task list with updated sort_orders
+    const allUpdated: Task[] = [
+      ...newGrouped.A.map((t, i) => ({ ...t, sort_order: i })),
+      ...newGrouped.B.map((t, i) => ({ ...t, sort_order: i })),
+      ...newGrouped.C.map((t, i) => ({ ...t, sort_order: i })),
+    ]
+
+    reorderTasks(allUpdated)
   }
 
   return (
@@ -128,44 +159,71 @@ export default function DashboardPage() {
         onSubmit={handleAddTask}
       />
 
-      {/* Task Groups */}
-      {(['A', 'B', 'C'] as const).map(priority => {
-        const priorityTasks = grouped[priority]
-        const labels = {
-          A: { title: 'Priority A — Must Do', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' },
-          B: { title: 'Priority B — Should Do', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
-          C: { title: 'Priority C — Could Do', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
-        }
-        const label = labels[priority]
+      {/* Task Groups with Drag and Drop */}
+      <DragDropContext onDragEnd={onDragEnd}>
+        {(['A', 'B', 'C'] as const).map(priority => {
+          const priorityTasks = grouped[priority]
+          const labels = {
+            A: { title: 'Priority A — Must Do', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' },
+            B: { title: 'Priority B — Should Do', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+            C: { title: 'Priority C — Could Do', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+          }
+          const label = labels[priority]
 
-        return (
-          <div key={priority}>
-            <div className={`flex items-center gap-2 mb-2 px-1`}>
-              <span className={`text-xs font-bold ${label.color} uppercase tracking-wider`}>
-                {label.title}
-              </span>
-              <span className="text-xs text-slate-400">({priorityTasks.length})</span>
+          return (
+            <div key={priority}>
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <span className={`text-xs font-bold ${label.color} uppercase tracking-wider`}>
+                  {label.title}
+                </span>
+                <span className="text-xs text-slate-400">({priorityTasks.length})</span>
+              </div>
+              <Droppable droppableId={priority}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`space-y-2 min-h-[48px] rounded-xl transition-colors ${
+                      snapshot.isDraggingOver ? `${label.bg} border-2 border-dashed ${label.border} p-2` : ''
+                    }`}
+                  >
+                    {priorityTasks.length === 0 && !snapshot.isDraggingOver ? (
+                      <div className={`text-center py-4 ${label.bg} border ${label.border} rounded-xl`}>
+                        <p className="text-xs text-slate-400">No {priority}-priority tasks</p>
+                      </div>
+                    ) : (
+                      priorityTasks.map((task, index) => (
+                        <Draggable key={task.id} draggableId={task.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              style={{
+                                ...provided.draggableProps.style,
+                                opacity: snapshot.isDragging ? 0.85 : 1,
+                              }}
+                            >
+                              <TaskCard
+                                task={task}
+                                categories={categories}
+                                dragHandleProps={provided.dragHandleProps}
+                                onToggle={(id, completed) => updateTask(id, { completed })}
+                                onDelete={deleteTask}
+                                onUpdate={updateTask}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
             </div>
-            {priorityTasks.length === 0 ? (
-              <div className={`text-center py-4 ${label.bg} border ${label.border} rounded-xl`}>
-                <p className="text-xs text-slate-400">No {priority}-priority tasks</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {priorityTasks.map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onToggle={(id, completed) => updateTask(id, { completed })}
-                    onDelete={deleteTask}
-                    onUpdate={updateTask}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )
-      })}
+          )
+        })}
+      </DragDropContext>
 
       {/* Daily Reflection */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
