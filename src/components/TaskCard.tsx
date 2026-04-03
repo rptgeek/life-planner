@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical, Pencil } from 'lucide-react'
+import { Check, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical, Pencil, CalendarArrowUp } from 'lucide-react'
 import { Task, Category, Role } from '@/lib/types'
 import { format } from 'date-fns'
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
@@ -21,6 +21,8 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
   const [showDetails, setShowDetails] = useState(false)
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleDraft, setTitleDraft] = useState(task.title)
+  const [showPushDate, setShowPushDate] = useState(false)
+  const [pushDate, setPushDate] = useState('')
 
   const priorityStyles = {
     A: 'border-l-red-500 bg-red-50/50',
@@ -211,6 +213,40 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
             )}
 
             <div className="flex-1" />
+
+            {/* Push to future date */}
+            {showPushDate ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="date"
+                  value={pushDate}
+                  min={format(new Date(), 'yyyy-MM-dd')}
+                  onChange={e => setPushDate(e.target.value)}
+                  className="text-xs border border-slate-200 rounded px-1.5 py-1 outline-none bg-white"
+                  autoFocus
+                />
+                <button
+                  onClick={() => {
+                    if (pushDate) { onUpdate(task.id, { scheduled_date: pushDate }); setShowPushDate(false) }
+                  }}
+                  disabled={!pushDate}
+                  className="text-xs bg-indigo-600 text-white px-2 py-1 rounded disabled:opacity-40 hover:bg-indigo-700"
+                >
+                  Move
+                </button>
+                <button onClick={() => setShowPushDate(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowPushDate(true)}
+                className="text-slate-400 hover:text-indigo-500 p-1"
+                title="Push to future date"
+              >
+                <CalendarArrowUp size={14} />
+              </button>
+            )}
 
             <button
               onClick={() => onDelete(task.id)}

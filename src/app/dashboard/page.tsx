@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { format, addDays, subDays } from 'date-fns'
+import { format, addDays, subDays, parseISO } from 'date-fns'
 import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Printer, Sparkles } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { useTasks, useCategories, useGoals, useRoles, useReflection, useProfile } from '@/lib/hooks'
@@ -118,7 +118,7 @@ export default function DashboardPage() {
         {/* Date navigator */}
         <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 px-2 py-1.5 shadow-sm">
           <button
-            onClick={() => setSelectedDate(format(subDays(new Date(selectedDate), 1), 'yyyy-MM-dd'))}
+            onClick={() => setSelectedDate(format(subDays(parseISO(selectedDate), 1), 'yyyy-MM-dd'))}
             className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <ChevronLeft size={16} />
@@ -126,11 +126,11 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 px-2">
             <CalIcon size={14} className="text-slate-400" />
             <span className="text-sm font-medium min-w-[140px] text-center">
-              {isToday ? 'Today' : ''} {format(new Date(selectedDate), 'EEE, MMM d, yyyy')}
+              {isToday ? 'Today' : ''} {format(parseISO(selectedDate), 'EEE, MMM d, yyyy')}
             </span>
           </div>
           <button
-            onClick={() => setSelectedDate(format(addDays(new Date(selectedDate), 1), 'yyyy-MM-dd'))}
+            onClick={() => setSelectedDate(format(addDays(parseISO(selectedDate), 1), 'yyyy-MM-dd'))}
             className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
           >
             <ChevronRight size={16} />
@@ -151,7 +151,7 @@ export default function DashboardPage() {
       <div className="hidden print:block print-header">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Daily Planner</h1>
-          <span className="text-sm">{format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')}</span>
+          <span className="text-sm">{format(parseISO(selectedDate), 'EEEE, MMMM d, yyyy')}</span>
         </div>
         {profile?.mission_statement && (
           <div className="print-mission mt-2">&ldquo;{profile.mission_statement}&rdquo;</div>
