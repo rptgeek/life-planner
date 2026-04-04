@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical, Pencil, CalendarArrowUp } from 'lucide-react'
+import { Check, Circle, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical, Pencil, CalendarArrowUp } from 'lucide-react'
 import { Task, Category, Role } from '@/lib/types'
 import { format } from 'date-fns'
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
@@ -12,7 +12,7 @@ interface TaskCardProps {
   categories: Category[]
   roles: Role[]
   dragHandleProps?: DraggableProvidedDragHandleProps | null
-  onToggle: (id: string, completed: boolean) => void
+  onToggle: (id: string, updates: { in_progress?: boolean; completed?: boolean }) => void
   onDelete: (id: string) => void
   onUpdate: (id: string, updates: Partial<Task>) => void
 }
@@ -55,7 +55,7 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
     <div className={`
       border-l-4 rounded-lg border border-slate-200 transition-all duration-200
       ${priorityStyles[task.priority]}
-      ${task.completed ? 'opacity-50' : ''}
+      ${task.completed ? 'opacity-50' : task.in_progress ? 'ring-1 ring-amber-300' : ''}
     `}>
       <div className="flex items-center gap-2 p-3">
         {/* Drag handle */}
@@ -68,17 +68,32 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
           {task.priority}{orderNum}
         </span>
 
-        {/* Checkbox */}
+        {/* Three-state toggle: empty → in-progress (dot) → completed (check) → empty */}
         <button
-          onClick={() => onToggle(task.id, !task.completed)}
+          onClick={() => {
+            if (task.completed) {
+              onToggle(task.id, { completed: false, in_progress: false })
+            } else if (task.in_progress) {
+              onToggle(task.id, { completed: true, in_progress: false })
+            } else {
+              onToggle(task.id, { in_progress: true, completed: false })
+            }
+          }}
+          title={task.completed ? 'Mark incomplete' : task.in_progress ? 'Mark complete' : 'Mark in progress'}
           className={`
             w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors
             ${task.completed
               ? 'bg-green-500 border-green-500 text-white'
-              : 'border-slate-300 hover:border-indigo-400'}
+              : task.in_progress
+              ? 'border-amber-400 hover:border-green-400'
+              : 'border-slate-300 hover:border-amber-400'}
           `}
         >
-          {task.completed && <Check size={12} />}
+          {task.completed
+            ? <Check size={12} />
+            : task.in_progress
+            ? <Circle size={7} className="fill-amber-400 text-amber-400" />
+            : null}
         </button>
 
         {/* Title */}
@@ -95,7 +110,7 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
           ) : (
             <div className="flex items-center gap-1 group/title">
               <p
-                className={`text-sm truncate ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}
+                className={`text-sm truncate ${task.completed ? 'line-through text-slate-400' : task.in_progress ? 'text-amber-700 font-medium' : 'text-slate-800'}`}
                 onDoubleClick={() => { setTitleDraft(task.title); setEditingTitle(true) }}
               >
                 {task.title}

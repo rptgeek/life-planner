@@ -88,6 +88,7 @@ create table public.tasks (
   priority text default 'B' check (priority in ('A', 'B', 'C')),
   due_date date,
   scheduled_date date,
+  in_progress boolean default false,
   completed boolean default false,
   completed_at timestamptz,
   sort_order integer default 0,

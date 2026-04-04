@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { format, subDays } from 'date-fns'
+import { format } from 'date-fns'
 import { X, ChevronRight, ChevronLeft, Sparkles, Target, ArrowRight, Plus, Check, RotateCcw, Sun } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useUser, useProfile, useGoals, useCategories, useRoles } from '@/lib/hooks'
@@ -35,7 +35,6 @@ export default function PlanMyDay({ selectedDate, onClose, onTasksAdded }: PlanM
   const [saving, setSaving] = useState(false)
 
   const activeShortTermGoals = goals.filter(g => g.goal_type === 'short_term' && g.status === 'active')
-  const yesterday = format(subDays(new Date(selectedDate), 1), 'yyyy-MM-dd')
 
   const fetchYesterdayTasks = useCallback(async () => {
     if (!user) return
@@ -43,10 +42,11 @@ export default function PlanMyDay({ selectedDate, onClose, onTasksAdded }: PlanM
       .from('tasks')
       .select('*, category:categories(*), role:roles(*)')
       .eq('user_id', user.id)
-      .eq('scheduled_date', yesterday)
+      .lt('scheduled_date', selectedDate)
       .eq('completed', false)
+      .order('scheduled_date', { ascending: false })
     setYesterdayTasks(data || [])
-  }, [user, yesterday])
+  }, [user, selectedDate])
 
   useEffect(() => { fetchYesterdayTasks() }, [fetchYesterdayTasks])
 
@@ -174,7 +174,7 @@ export default function PlanMyDay({ selectedDate, onClose, onTasksAdded }: PlanM
   const stepSubtitles = [
     'Start with purpose',
     'What will you move forward today?',
-    yesterdayTasks.length > 0 ? `${yesterdayTasks.length} incomplete from yesterday` : 'Nothing left over',
+    yesterdayTasks.length > 0 ? `${yesterdayTasks.length} incomplete from previous days` : 'Nothing left over',
     'Anything else on your plate?',
     "You're ready. Let's go.",
   ]
@@ -313,11 +313,11 @@ export default function PlanMyDay({ selectedDate, onClose, onTasksAdded }: PlanM
                 <div className="text-center py-10 bg-green-50 border border-green-100 rounded-xl">
                   <Check size={32} className="mx-auto text-green-400 mb-2" />
                   <p className="text-sm text-green-700 font-medium">Clean slate!</p>
-                  <p className="text-xs text-green-600 mt-1">You finished everything from yesterday.</p>
+                  <p className="text-xs text-green-600 mt-1">No incomplete tasks from previous days.</p>
                 </div>
               ) : (
                 <>
-                  <p className="text-xs text-slate-500">Select tasks to carry into today:</p>
+                  <p className="text-xs text-slate-500">Select tasks to carry forward:</p>
                   {yesterdayTasks.map(task => (
                     <button
                       key={task.id}

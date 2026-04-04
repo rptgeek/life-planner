@@ -245,7 +245,7 @@ export default function DashboardPage() {
                                 categories={categories}
                                 roles={roles}
                                 dragHandleProps={provided.dragHandleProps}
-                                onToggle={(id, completed) => updateTask(id, { completed })}
+                                onToggle={(id, updates) => updateTask(id, updates)}
                                 onDelete={deleteTask}
                                 onUpdate={updateTask}
                               />

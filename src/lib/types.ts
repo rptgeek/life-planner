@@ -66,6 +66,7 @@ export interface Task {
   priority: 'A' | 'B' | 'C'
   due_date: string | null
   scheduled_date: string | null
+  in_progress: boolean
   completed: boolean
   completed_at: string | null
   sort_order: number
