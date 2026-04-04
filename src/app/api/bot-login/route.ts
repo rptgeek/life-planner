@@ -1,6 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 const BOT_SECRET = 'screenshot-bot-2024-lp'
@@ -25,21 +24,23 @@ export async function GET(request: Request) {
       type: 'magiclink',
       email: BOT_EMAIL,
     })
-    if (linkError) throw new Error(linkError.message)
+    if (linkError) throw new Error(`generateLink: ${linkError.message}`)
 
     const tokenHash = linkData.properties.hashed_token
 
-    // Server client exchanges token and sets session cookies properly
-    const cookieStore = await cookies()
+    // Build the redirect response first so we can set cookies on it
+    const response = NextResponse.redirect(`${origin}/dashboard`)
+
+    // Server client that sets cookies on the response
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() { return cookieStore.getAll() },
+          getAll() { return [] },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              response.cookies.set(name, value, options)
             )
           },
         },
@@ -50,11 +51,11 @@ export async function GET(request: Request) {
       token_hash: tokenHash,
       type: 'email',
     })
-    if (otpError) throw new Error(otpError.message)
+    if (otpError) throw new Error(`verifyOtp: ${otpError.message}`)
 
-    return NextResponse.redirect(`${origin}/dashboard`)
+    return response
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
+    const message = err instanceof Error ? err.message : String(err)
     return new NextResponse(`Bot login failed: ${message}`, { status: 500 })
   }
 }
