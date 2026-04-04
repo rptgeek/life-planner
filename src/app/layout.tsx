@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   keywords: ['life planner', 'daily planner', 'goal setting', 'mission statement', 'Franklin planner', 'productivity', 'personal development'],
   authors: [{ name: 'Life Planner' }],
   creator: 'Life Planner',
-  metadataBase: new URL('https://life-planner-rouge.vercel.app'),
+  metadataBase: new URL('https://life-planner-five-pi.vercel.app'),
   openGraph: {
     title: 'Life Planner — Plan with Purpose',
     description: 'Connect your mission and values to daily action. A Franklin-inspired planner for people who want to live intentionally.',
