@@ -1,17 +1,35 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@/lib/hooks'
+import { useUser, useProfile, useValues } from '@/lib/hooks'
 import Sidebar from '@/components/Sidebar'
+import OnboardingWizard from '@/components/OnboardingWizard'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUser()
+  const { profile } = useProfile()
+  const { values } = useValues()
   const router = useRouter()
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) router.replace('/login')
   }, [user, loading, router])
+
+  // Determine whether to show onboarding once profile + values have loaded
+  useEffect(() => {
+    if (!user || loading) return
+    if (profile === null) return // still loading
+    if (onboardingChecked) return
+
+    const alreadyDone = localStorage.getItem('onboarding_complete') === '1'
+    if (!alreadyDone && !profile.mission_statement && values.length === 0) {
+      setShowOnboarding(true)
+    }
+    setOnboardingChecked(true)
+  }, [user, loading, profile, values, onboardingChecked])
 
   if (loading) {
     return (
@@ -31,6 +49,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </main>
+      {showOnboarding && (
+        <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+      )}
     </div>
   )
 }
