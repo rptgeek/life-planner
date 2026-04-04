@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useProfile } from '@/lib/hooks'
+import { APP_VERSION } from '@/lib/version'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Daily Planner', icon: LayoutDashboard },
@@ -98,7 +99,7 @@ export default function Sidebar() {
             })}
           </nav>
 
-          {/* Logout */}
+          {/* Logout + version */}
           <div className="p-4 border-t border-slate-700">
             <button
               onClick={handleLogout}
@@ -107,6 +108,7 @@ export default function Sidebar() {
               <LogOut size={16} />
               Sign Out
             </button>
+            <p className="text-xs text-slate-600 px-1 mt-1">v{APP_VERSION}</p>
           </div>
         </div>
       </aside>
