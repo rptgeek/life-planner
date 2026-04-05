@@ -162,6 +162,14 @@ const s = StyleSheet.create({
     marginTop: 1.5,
     flexShrink: 0,
   },
+  circleDone: {
+    backgroundColor: C.mid,
+    borderColor: C.mid,
+  },
+  circleInProgress: {
+    borderColor: C.amber,
+    borderWidth: 1.75,
+  },
   taskNum: {
     fontSize: 7,
     fontFamily: 'Helvetica-Bold',
@@ -180,6 +188,17 @@ const s = StyleSheet.create({
   },
   taskTitleDone: {
     color: C.ruleDark,
+    textDecoration: 'line-through',
+  },
+  taskTitleInProgress: {
+    color: C.amber,
+  },
+  inProgressLabel: {
+    fontSize: 5.5,
+    color: C.amber,
+    fontFamily: 'Helvetica-Bold',
+    letterSpacing: 0.5,
+    marginLeft: 4,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -317,11 +336,20 @@ function PrioritySection({
 
       {capped.map((task, i) => (
         <View key={task.id} style={s.taskRow}>
-          <View style={s.circle} />
+          <View style={[
+            s.circle,
+            task.completed ? s.circleDone : {},
+            task.in_progress && !task.completed ? s.circleInProgress : {},
+          ]} />
           <Text style={[s.taskNum, { color: p.color }]}>{pkey}{i + 1}</Text>
           <View style={s.taskBody}>
-            <Text style={[s.taskTitle, task.completed ? s.taskTitleDone : {}]}>
+            <Text style={[
+              s.taskTitle,
+              task.completed ? s.taskTitleDone : {},
+              task.in_progress && !task.completed ? s.taskTitleInProgress : {},
+            ]}>
               {task.title}
+              {task.in_progress && !task.completed ? ' ▶' : ''}
             </Text>
             {(task.category || task.role) && (
               <View style={s.badgeRow}>
