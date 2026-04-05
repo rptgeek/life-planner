@@ -4,6 +4,8 @@ export interface Profile {
   mission_statement: string | null
   created_at: string
   updated_at: string
+  selected_calendar_ids: string[] | null
+  default_push_calendar_id: string | null
 }
 
 export interface Category {
