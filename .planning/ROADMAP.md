@@ -27,9 +27,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can designate exactly one calendar as the default push target for tasks
   3. Calendar selections survive a page reload and re-login (stored in Supabase, not sessionStorage)
   4. User can return to settings at any time and change both the display selection and the default push calendar
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
-- [ ] 01-01-PLAN.md — Data layer: migration SQL, Profile type, listCalendars API, useCalendarPreferences hook
+- [x] 01-01-PLAN.md — Data layer: migration SQL, Profile type, listCalendars API, useCalendarPreferences hook
 - [ ] 01-02-PLAN.md — UI: CalendarPreferencesPanel component, Settings page integration, DailyTimeLog setup prompt
 **UI hint**: yes
 
@@ -61,6 +61,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Calendar Preferences | 0/2 | Planning complete | - |
+| 1. Calendar Preferences | 1/2 | In Progress|  |
 | 2. Calendar View Rendering | 0/TBD | Not started | - |
 | 3. Task Sync Routing | 0/TBD | Not started | - |
