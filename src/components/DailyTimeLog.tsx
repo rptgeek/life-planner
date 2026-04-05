@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { CalendarDays, RefreshCw, ExternalLink } from 'lucide-react'
 import type { CalendarEvent, Task } from '@/lib/types'
+import { useCalendarPreferences } from '@/lib/useCalendarPreferences'
 
 interface DailyTimeLogProps {
   events: CalendarEvent[]
@@ -57,6 +58,7 @@ export default function DailyTimeLog({
   events, tasks, loading, tokenExpired, onReconnect, onRefresh,
 }: DailyTimeLogProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const { hasConfigured } = useCalendarPreferences()
 
   const totalHeight = (HOUR_END - HOUR_START) * HOUR_PX
 
@@ -131,6 +133,24 @@ export default function DailyTimeLog({
                 Reconnect
               </button>{' '}
               to see your schedule.
+            </div>
+          )}
+
+          {/* Post-connect preferences setup prompt */}
+          {!tokenExpired && !hasConfigured && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3 flex items-start gap-3">
+              <CalendarDays size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-amber-800">
+                  Set up your calendar preferences to choose which calendars to display and where to push tasks.
+                </p>
+              </div>
+              <a
+                href="/settings"
+                className="flex-shrink-0 text-xs bg-amber-600 text-white px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap"
+              >
+                Configure in Settings
+              </a>
             </div>
           )}
 

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Trash2, Save, Palette, Settings as SettingsIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Trash2, Save, Palette, Settings as SettingsIcon, CalendarDays } from 'lucide-react'
 import { useCategories, useRoles, useProfile } from '@/lib/hooks'
+import CalendarPreferencesPanel from '@/components/CalendarPreferencesPanel'
+import { getCachedCalendarToken } from '@/lib/useGoogleCalendarToken'
 
 const COLOR_OPTIONS = [
   '#8b5cf6', '#ec4899', '#3b82f6', '#f59e0b', '#10b981',
@@ -35,6 +37,13 @@ export default function SettingsPage() {
   // Profile state
   const [displayName, setDisplayName] = useState('')
   const [editingProfile, setEditingProfile] = useState(false)
+
+  // Calendar token state
+  const [calToken, setCalToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    setCalToken(getCachedCalendarToken())
+  }, [])
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,6 +136,18 @@ export default function SettingsPage() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* Google Calendar */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <CalendarDays size={16} className="text-indigo-500" />
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700">Google Calendar</h3>
+            <p className="text-xs text-slate-400 mt-0.5">Choose which calendars to display and set a default push target</p>
+          </div>
+        </div>
+        <CalendarPreferencesPanel token={calToken} />
       </div>
 
       {/* Categories */}
