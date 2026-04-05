@@ -1,0 +1,128 @@
+import type { CalendarEvent, Task } from './types'
+
+const BASE = 'https://www.googleapis.com/calendar/v3'
+
+export class GoogleTokenExpiredError extends Error {
+  constructor() { super('Google token expired or missing Calendar scope') }
+}
+
+async function gcalFetch(
+  token: string,
+  path: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...(options.headers ?? {}),
+    },
+  })
+  if (res.status === 401 || res.status === 403) throw new GoogleTokenExpiredError()
+  return res
+}
+
+// ── Fetch events for a calendar day ─────────────────────────────────────────
+
+export async function fetchCalendarEvents(
+  token: string,
+  date: string  // 'yyyy-MM-dd'
+): Promise<CalendarEvent[]> {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const timeMin = encodeURIComponent(`${date}T00:00:00`)
+  const timeMax = encodeURIComponent(`${date}T23:59:59`)
+  const tzEnc = encodeURIComponent(tz)
+
+  const res = await gcalFetch(
+    token,
+    `/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&timeZone=${tzEnc}&singleEvents=true&orderBy=startTime&maxResults=50`
+  )
+  if (!res.ok) return []
+  const json = await res.json()
+
+  return (json.items ?? []).map((item: Record<string, unknown>) => {
+    const start = item.start as { dateTime?: string; date?: string; timeZone?: string }
+    const end   = item.end   as { dateTime?: string; date?: string; timeZone?: string }
+    return {
+      id: item.id as string,
+      summary: (item.summary as string) || '(No title)',
+      start,
+      end,
+      colorId: item.colorId as string | undefined,
+      htmlLink: item.htmlLink as string | undefined,
+      allDay: !start.dateTime,
+    } satisfies CalendarEvent
+  })
+}
+
+// ── Build event body from a task ─────────────────────────────────────────────
+
+function taskToEventBody(task: Task & { start_time: string; duration_minutes: number }) {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const date = task.scheduled_date!
+  const [h, m] = task.start_time.split(':').map(Number)
+  const startDt = new Date(`${date}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`)
+  const endDt = new Date(startDt.getTime() + task.duration_minutes * 60_000)
+
+  const fmt = (d: Date) => d.toISOString().replace('Z', '') // strip Z — we supply timeZone separately
+
+  return {
+    summary: task.title,
+    description: task.description ?? undefined,
+    start: { dateTime: fmt(startDt), timeZone: tz },
+    end:   { dateTime: fmt(endDt),   timeZone: tz },
+    source: { title: 'Life Planner', url: 'https://life-planner-five-pi.vercel.app' },
+  }
+}
+
+// ── Create event ─────────────────────────────────────────────────────────────
+
+export async function createCalendarEvent(
+  token: string,
+  task: Task & { start_time: string; duration_minutes: number }
+): Promise<string> {
+  const res = await gcalFetch(token, '/calendars/primary/events', {
+    method: 'POST',
+    body: JSON.stringify(taskToEventBody(task)),
+  })
+  if (!res.ok) throw new Error(`Failed to create event: ${res.status}`)
+  const json = await res.json()
+  return json.id as string
+}
+
+// ── Update event ─────────────────────────────────────────────────────────────
+
+export async function updateCalendarEvent(
+  token: string,
+  eventId: string,
+  task: Task & { start_time: string; duration_minutes: number }
+): Promise<void> {
+  const res = await gcalFetch(token, `/calendars/primary/events/${eventId}`, {
+    method: 'PUT',
+    body: JSON.stringify(taskToEventBody(task)),
+  })
+  if (!res.ok) throw new Error(`Failed to update event: ${res.status}`)
+}
+
+// ── Delete event ─────────────────────────────────────────────────────────────
+
+export async function deleteCalendarEvent(
+  token: string,
+  eventId: string
+): Promise<void> {
+  const res = await gcalFetch(token, `/calendars/primary/events/${eventId}`, {
+    method: 'DELETE',
+  })
+  // 204 = success, 410 = already deleted — both are fine
+  if (!res.ok && res.status !== 410) throw new Error(`Failed to delete event: ${res.status}`)
+}
+
+// ── Get token from Supabase session ─────────────────────────────────────────
+
+export async function getGoogleToken(): Promise<string | null> {
+  const { createClient } = await import('./supabase')
+  const supabase = createClient()
+  const { data } = await supabase.auth.getSession()
+  return data.session?.provider_token ?? sessionStorage.getItem('gcal_token')
+}

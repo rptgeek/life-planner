@@ -17,6 +17,8 @@ export default function LoginPage() {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/confirm`,
+        scopes: 'https://www.googleapis.com/auth/calendar',
+        queryParams: { prompt: 'consent', access_type: 'online' },
       },
     })
   }

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Circle, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical, Pencil, CalendarArrowUp } from 'lucide-react'
+import { Check, Circle, Trash2, ChevronDown, ChevronUp, Link2, Calendar, GripVertical, Pencil, CalendarArrowUp, Clock, CalendarCheck, CalendarX } from 'lucide-react'
 import { Task, Category, Role } from '@/lib/types'
 import { format } from 'date-fns'
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
+import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent, getGoogleToken, GoogleTokenExpiredError } from '@/lib/googleCalendar'
 
 interface TaskCardProps {
   task: Task
@@ -23,6 +24,10 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
   const [titleDraft, setTitleDraft] = useState(task.title)
   const [showPushDate, setShowPushDate] = useState(false)
   const [pushDate, setPushDate] = useState('')
+  const [startTime, setStartTime] = useState(task.start_time?.slice(0, 5) ?? '')
+  const [durationMin, setDurationMin] = useState(task.duration_minutes ?? 30)
+  const [calSyncing, setCalSyncing] = useState(false)
+  const [calError, setCalError] = useState<string | null>(null)
 
   const priorityStyles = {
     A: 'border-l-red-500 bg-red-50/50',
@@ -232,6 +237,102 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
               </select>
             )}
 
+            <div className="flex-1" />
+
+            {/* ── Calendar time scheduling ── */}
+          </div>
+
+          {/* Time slot row */}
+          <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-100">
+            <Clock size={12} className="text-slate-400 flex-shrink-0" />
+            <input
+              type="time"
+              value={startTime}
+              onChange={e => {
+                setStartTime(e.target.value)
+                if (e.target.value) onUpdate(task.id, { start_time: e.target.value + ':00' })
+                else onUpdate(task.id, { start_time: null })
+                setCalError(null)
+              }}
+              className="text-xs border border-slate-200 rounded px-1.5 py-1 outline-none bg-white"
+            />
+            <select
+              value={durationMin}
+              onChange={e => {
+                const v = Number(e.target.value)
+                setDurationMin(v)
+                onUpdate(task.id, { duration_minutes: v })
+              }}
+              className="text-xs border border-slate-200 rounded px-1.5 py-1 outline-none bg-white"
+            >
+              {[15, 30, 45, 60, 90, 120].map(m => (
+                <option key={m} value={m}>{m} min</option>
+              ))}
+            </select>
+
+            {startTime && task.scheduled_date && (
+              <button
+                onClick={async () => {
+                  setCalSyncing(true)
+                  setCalError(null)
+                  try {
+                    const token = await getGoogleToken()
+                    if (!token) throw new GoogleTokenExpiredError()
+                    const augmented = { ...task, start_time: startTime + ':00', duration_minutes: durationMin }
+                    if (task.google_event_id) {
+                      await updateCalendarEvent(token, task.google_event_id, augmented)
+                    } else {
+                      const eventId = await createCalendarEvent(token, augmented)
+                      onUpdate(task.id, { google_event_id: eventId })
+                    }
+                  } catch (e) {
+                    setCalError(e instanceof GoogleTokenExpiredError ? 'Reconnect Google Calendar' : 'Sync failed')
+                  } finally {
+                    setCalSyncing(false)
+                  }
+                }}
+                disabled={calSyncing}
+                className="flex items-center gap-1 text-xs text-teal-600 hover:text-teal-800 border border-teal-200 bg-teal-50 px-2 py-1 rounded disabled:opacity-50"
+              >
+                <CalendarCheck size={12} />
+                {calSyncing ? 'Syncing…' : task.google_event_id ? 'Update Calendar' : 'Sync to Google Cal'}
+              </button>
+            )}
+
+            {task.google_event_id && (
+              <button
+                onClick={async () => {
+                  setCalSyncing(true)
+                  setCalError(null)
+                  try {
+                    const token = await getGoogleToken()
+                    if (!token) throw new GoogleTokenExpiredError()
+                    await deleteCalendarEvent(token, task.google_event_id!)
+                    onUpdate(task.id, { google_event_id: null, start_time: null, duration_minutes: null })
+                    setStartTime('')
+                  } catch (e) {
+                    setCalError(e instanceof GoogleTokenExpiredError ? 'Reconnect Google Calendar' : 'Delete failed')
+                  } finally {
+                    setCalSyncing(false)
+                  }
+                }}
+                disabled={calSyncing}
+                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 border border-red-200 bg-red-50 px-2 py-1 rounded disabled:opacity-50"
+              >
+                <CalendarX size={12} />
+                Remove
+              </button>
+            )}
+
+            {calError && <span className="text-xs text-red-500">{calError}</span>}
+            {task.google_event_id && !calError && (
+              <span className="text-xs text-teal-500 flex items-center gap-1">
+                <CalendarCheck size={11} /> In Google Calendar
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="flex-1" />
 
             {/* Push to future date */}

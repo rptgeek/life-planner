@@ -5,11 +5,14 @@ import { format, addDays, subDays, parseISO } from 'date-fns'
 import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Sparkles } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { useTasks, useCategories, useGoals, useRoles, useReflection, useProfile } from '@/lib/hooks'
+import { useGoogleCalendar } from '@/lib/useGoogleCalendar'
 import { Task } from '@/lib/types'
 import TaskForm from '@/components/TaskForm'
 import TaskCard from '@/components/TaskCard'
+import DailyTimeLog from '@/components/DailyTimeLog'
 import PlanMyDay from '@/components/PlanMyDay'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
+import { createClient } from '@/lib/supabase'
 
 export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -20,6 +23,19 @@ export default function DashboardPage() {
   const { roles } = useRoles()
   const { reflection, saveReflection } = useReflection(selectedDate)
   const { profile } = useProfile()
+  const { events: calEvents, loading: calLoading, tokenExpired, refresh: calRefresh } = useGoogleCalendar(selectedDate)
+  const supabase = createClient()
+
+  const handleReconnectCalendar = () => {
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/confirm`,
+        scopes: 'https://www.googleapis.com/auth/calendar',
+        queryParams: { prompt: 'consent', access_type: 'online' },
+      },
+    })
+  }
 
   const isToday = selectedDate === format(new Date(), 'yyyy-MM-dd')
 
@@ -111,7 +127,7 @@ export default function DashboardPage() {
         </button>
 
         {/* Download PDF button */}
-        <PDFDownloadButton data={{ selectedDate, profile, tasks, reflection }} />
+        <PDFDownloadButton data={{ selectedDate, profile, tasks, reflection, calendarEvents: calEvents }} />
 
         {/* Date navigator */}
         <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 px-2 py-1.5 shadow-sm">
@@ -183,6 +199,16 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Daily Schedule / Time Log */}
+      <DailyTimeLog
+        events={calEvents}
+        tasks={tasks}
+        loading={calLoading}
+        tokenExpired={tokenExpired}
+        onReconnect={handleReconnectCalendar}
+        onRefresh={calRefresh}
+      />
 
       {/* Task Form */}
       <div className="no-print">

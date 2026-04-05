@@ -1,13 +1,14 @@
 import React from 'react'
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer'
 import { format, parseISO } from 'date-fns'
-import type { Task, Profile, DailyReflection } from '@/lib/types'
+import type { Task, Profile, DailyReflection, CalendarEvent } from '@/lib/types'
 
 export interface FranklinPlannerData {
   selectedDate: string
   profile: Profile | null
   tasks: Task[]
   reflection: DailyReflection | null
+  calendarEvents?: CalendarEvent[]
 }
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -259,6 +260,12 @@ const s = StyleSheet.create({
     borderLeftWidth: 0.5,
     borderLeftColor: C.rule,
     paddingLeft: 4,
+    justifyContent: 'center',
+  },
+  timeEventText: {
+    fontSize: 7,
+    color: C.ink,
+    fontFamily: 'Helvetica-Bold',
   },
   timeHalfLine: {
     borderBottomWidth: 0.5,
@@ -388,7 +395,20 @@ function PrioritySection({
 }
 
 export function FranklinPlannerPDF({ data }: { data: FranklinPlannerData }) {
-  const { selectedDate, profile, tasks, reflection } = data
+  const { selectedDate, profile, tasks, reflection, calendarEvents = [] } = data
+
+  // Build a map: hour (0-23) → first event or timed task label for that hour
+  const hourLabels = new Map<number, string>()
+  calendarEvents.forEach(e => {
+    if (!e.start.dateTime) return
+    const h = new Date(e.start.dateTime).getHours()
+    if (!hourLabels.has(h)) hourLabels.set(h, e.summary.slice(0, 55))
+  })
+  tasks.filter(t => t.start_time).forEach(t => {
+    const h = parseInt(t.start_time!.split(':')[0])
+    const label = `${t.priority}: ${t.title}`.slice(0, 55)
+    if (!hourLabels.has(h)) hourLabels.set(h, label)
+  })
   const dateStr = format(parseISO(selectedDate), 'EEEE · MMMM d, yyyy').toUpperCase()
 
   const byPriority = (p: 'A' | 'B' | 'C') =>
@@ -438,14 +458,21 @@ export function FranklinPlannerPDF({ data }: { data: FranklinPlannerData }) {
           <View style={s.rightCol}>
             {/* Time log */}
             <Text style={s.sectionTitle}>APPOINTMENTS  ·  SCHEDULE</Text>
-            {HOURS.map((h, i) => (
-              <View key={h.label} style={[s.timeRow, i % 2 === 1 ? s.timeRowAlt : {}]}>
-                <Text style={s.timeLabel}>{h.label}</Text>
-                <View style={s.timeContent}>
-                  <View style={s.timeHalfLine} />
+            {HOURS.map((h, i) => {
+              const hour = 6 + i
+              const eventLabel = hourLabels.get(hour)
+              return (
+                <View key={h.label} style={[s.timeRow, i % 2 === 1 ? s.timeRowAlt : {}]}>
+                  <Text style={s.timeLabel}>{h.label}</Text>
+                  <View style={s.timeContent}>
+                    {eventLabel
+                      ? <Text style={s.timeEventText}>{eventLabel}</Text>
+                      : <View style={s.timeHalfLine} />
+                    }
+                  </View>
                 </View>
-              </View>
-            ))}
+              )
+            })}
 
             {/* Notes */}
             <View style={s.notesSection}>

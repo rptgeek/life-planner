@@ -17,6 +17,10 @@ export default function AuthConfirmPage() {
           console.error('auth confirm error:', msg)
           router.replace(`/login?error=${encodeURIComponent(msg)}`)
         } else {
+          // Cache the Google provider token for Calendar API use
+          if (data.session.provider_token) {
+            sessionStorage.setItem('gcal_token', data.session.provider_token)
+          }
           router.replace('/dashboard')
         }
       })

@@ -66,6 +66,9 @@ export interface Task {
   priority: 'A' | 'B' | 'C' | 'D'
   due_date: string | null
   scheduled_date: string | null
+  start_time: string | null        // 'HH:MM:SS' — time of day when scheduled
+  duration_minutes: number | null  // default 30 when set
+  google_event_id: string | null   // synced Google Calendar event id
   in_progress: boolean
   completed: boolean
   completed_at: string | null
@@ -75,6 +78,16 @@ export interface Task {
   category?: Category
   goal?: Goal
   role?: Role
+}
+
+export interface CalendarEvent {
+  id: string
+  summary: string
+  start: { dateTime?: string; date?: string; timeZone?: string }
+  end: { dateTime?: string; date?: string; timeZone?: string }
+  colorId?: string
+  htmlLink?: string
+  allDay?: boolean
 }
 
 export interface DailyReflection {
