@@ -7,10 +7,10 @@
 
 ### Calendar Selection
 
-- [ ] **CAL-01**: After connecting Google Calendar (OAuth), user is shown a multi-select list of their Google Calendars and can choose which ones to display in the app
+- [x] **CAL-01**: After connecting Google Calendar (OAuth), user is shown a multi-select list of their Google Calendars and can choose which ones to display in the app
 - [x] **CAL-02**: Calendar display selection is persisted (survives page reload / re-login)
-- [ ] **CAL-03**: User can edit calendar display selection from a settings area (not only on first connect)
-- [ ] **CAL-04**: User can designate one Google Calendar as the default push target for new tasks
+- [x] **CAL-03**: User can edit calendar display selection from a settings area (not only on first connect)
+- [x] **CAL-04**: User can designate one Google Calendar as the default push target for new tasks
 
 ### Calendar View
 
@@ -44,10 +44,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CAL-01 | Phase 1 | Pending |
+| CAL-01 | Phase 1 | Complete |
 | CAL-02 | Phase 1 | Complete |
-| CAL-03 | Phase 1 | Pending |
-| CAL-04 | Phase 1 | Pending |
+| CAL-03 | Phase 1 | Complete |
+| CAL-04 | Phase 1 | Complete |
 | VIEW-01 | Phase 2 | Pending |
 | VIEW-02 | Phase 2 | Pending |
 | SYNC-01 | Phase 2 | Pending |

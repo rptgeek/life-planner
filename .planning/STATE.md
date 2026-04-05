@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-04-05T21:53:00Z"
+last_updated: "2026-04-05T22:05:00Z"
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -24,14 +24,14 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Phase 1: Calendar Preferences**
 
-- Status: In progress (plan 01 complete, plan 02 pending)
+- Status: In progress (plans 01+02 complete, awaiting human verify for checkpoint Task 3 in 01-02)
 - Goal: User can select which Google Calendars to display and set a default push target; preferences persisted in Supabase
 
 ## Roadmap Summary
 
 | Phase | Goal | Status |
 |-------|------|--------|
-| 1 | Calendar Preferences (selection UI + persistence + default push) | In progress (1/2 plans done) |
+| 1 | Calendar Preferences (selection UI + persistence + default push) | In progress (2/2 plans done, checkpoint pending) |
 | 2 | Calendar View Rendering (fetch + display events) | Not started |
 | 3 | Task Sync Routing (push to configured default calendar) | Not started |
 
@@ -39,7 +39,9 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 - useCalendarPreferences delegates to useProfile (Partial<Profile> update) to avoid duplicate Supabase logic
 - null vs [] distinction for selected_calendar_ids: null = never configured, [] = explicitly cleared
+- token passed as prop to CalendarPreferencesPanel (Settings page owns token lifecycle)
+- getCachedCalendarToken called in useEffect to avoid SSR window access errors
 
 ## Last Updated
 
-2026-04-05 — completed plan 01-01 (data layer: migration SQL, types, listCalendars, useCalendarPreferences)
+2026-04-05 — completed plan 01-02 (UI: CalendarPreferencesPanel, Settings page, DailyTimeLog setup prompt). Checkpoint Task 3 awaits human verification.

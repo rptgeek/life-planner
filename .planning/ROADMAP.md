@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 1/2 plans executed
 Plans:
 - [x] 01-01-PLAN.md — Data layer: migration SQL, Profile type, listCalendars API, useCalendarPreferences hook
-- [ ] 01-02-PLAN.md — UI: CalendarPreferencesPanel component, Settings page integration, DailyTimeLog setup prompt
+- [x] 01-02-PLAN.md — UI: CalendarPreferencesPanel component, Settings page integration, DailyTimeLog setup prompt
 **UI hint**: yes
 
 ### Phase 2: Calendar View Rendering
@@ -61,6 +61,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Calendar Preferences | 1/2 | In Progress|  |
+| 1. Calendar Preferences | 2/2 | In Progress (checkpoint pending) |  |
 | 2. Calendar View Rendering | 0/TBD | Not started | - |
 | 3. Task Sync Routing | 0/TBD | Not started | - |
