@@ -147,7 +147,7 @@ export default function SettingsPage() {
             <p className="text-xs text-slate-400 mt-0.5">Choose which calendars to display and set a default push target</p>
           </div>
         </div>
-        <CalendarPreferencesPanel token={calToken} />
+        <CalendarPreferencesPanel token={calToken} onTokenChange={setCalToken} />
       </div>
 
       {/* Categories */}

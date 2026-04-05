@@ -1,28 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { CalendarDays, Save } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { CalendarDays, Save, RefreshCw } from 'lucide-react'
 import { listCalendars } from '@/lib/googleCalendar'
 import type { CalendarListEntry } from '@/lib/googleCalendar'
 import { useCalendarPreferences } from '@/lib/useCalendarPreferences'
+import { requestCalendarToken, preloadGIS } from '@/lib/useGoogleCalendarToken'
 
 interface CalendarPreferencesPanelProps {
   token: string | null
+  onTokenChange?: (token: string) => void
 }
 
-export default function CalendarPreferencesPanel({ token }: CalendarPreferencesPanelProps) {
+export default function CalendarPreferencesPanel({ token, onTokenChange }: CalendarPreferencesPanelProps) {
   const { selectedIds, defaultPushId, savePreferences } = useCalendarPreferences()
 
   const [calendars, setCalendars] = useState<CalendarListEntry[]>([])
   const [loading, setLoading] = useState(false)
+  const [connecting, setConnecting] = useState(false)
   const [localSelectedIds, setLocalSelectedIds] = useState<string[]>([])
   const [localDefaultPushId, setLocalDefaultPushId] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const initializedRef = useRef(false)
 
-  // Initialise local state from hook once hook data is available
+  // Preload GIS so the connect button works without a popup blocker
+  useEffect(() => { preloadGIS() }, [])
+
+  // Only initialize local state from hook once (avoid resetting on re-renders)
   useEffect(() => {
-    setLocalSelectedIds(selectedIds)
-    setLocalDefaultPushId(defaultPushId)
+    if (!initializedRef.current && selectedIds !== undefined) {
+      initializedRef.current = true
+      setLocalSelectedIds(selectedIds)
+      setLocalDefaultPushId(defaultPushId)
+    }
   }, [selectedIds, defaultPushId])
 
   useEffect(() => {
@@ -32,6 +42,18 @@ export default function CalendarPreferencesPanel({ token }: CalendarPreferencesP
       .then(items => setCalendars(items))
       .finally(() => setLoading(false))
   }, [token])
+
+  const handleConnect = async () => {
+    setConnecting(true)
+    try {
+      const newToken = await requestCalendarToken()
+      onTokenChange?.(newToken)
+    } catch {
+      // user dismissed popup
+    } finally {
+      setConnecting(false)
+    }
+  }
 
   const toggleSelected = (id: string) => {
     setLocalSelectedIds(prev =>
@@ -47,10 +69,16 @@ export default function CalendarPreferencesPanel({ token }: CalendarPreferencesP
 
   if (!token) {
     return (
-      <div className="text-sm text-slate-500">
-        Connect Google Calendar from the{' '}
-        <a href="/dashboard" className="text-indigo-600 hover:underline">Dashboard</a>{' '}
-        to manage calendar preferences.
+      <div className="space-y-3">
+        <p className="text-sm text-slate-500">Connect your Google Calendar to choose which calendars to display.</p>
+        <button
+          onClick={handleConnect}
+          disabled={connecting}
+          className="flex items-center gap-2 bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+        >
+          <RefreshCw size={14} className={connecting ? 'animate-spin' : ''} />
+          {connecting ? 'Connecting…' : 'Connect Google Calendar'}
+        </button>
       </div>
     )
   }
