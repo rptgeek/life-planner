@@ -35,7 +35,16 @@ body {
   /* Hide everything except the print content */
   nav, aside, .no-print { display: none !important; }
 
-  body { background: white !important; color: black !important; font-size: 11pt; }
+  /* Force single page */
+  @page { size: letter portrait; margin: 0.5in; }
+  html, body { height: auto !important; overflow: visible !important; }
+  body { background: white !important; color: black !important; font-size: 9pt; }
+
+  /* Squeeze all content into one page */
+  .space-y-6 > * { margin-top: 6pt !important; margin-bottom: 0 !important; }
+  textarea { display: none !important; }
+  .print-notes-lines { min-height: 30pt !important; }
+  * { page-break-inside: avoid; }
 
   .print-page {
     max-width: 100% !important;

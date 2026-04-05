@@ -187,6 +187,7 @@ export default function DashboardPage() {
       )}
 
       {/* Task Form */}
+      <div className="no-print">
       <TaskForm
         categories={categories}
         goals={goals}
@@ -194,6 +195,7 @@ export default function DashboardPage() {
         scheduledDate={selectedDate}
         onSubmit={handleAddTask}
       />
+      </div>
 
       {/* Task Groups with Drag and Drop */}
       <DragDropContext onDragEnd={onDragEnd}>
@@ -264,7 +266,7 @@ export default function DashboardPage() {
       </DragDropContext>
 
       {/* Daily Reflection */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3 no-print">
         <h3 className="text-sm font-semibold text-slate-700">Daily Reflection</h3>
         <div>
           <label className="text-xs text-slate-500 block mb-1">What went well today?</label>
