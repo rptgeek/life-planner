@@ -18,8 +18,8 @@ export default function AuthConfirmPage() {
       .auth.exchangeCodeForSession(code)
       .then(({ error }) => {
         if (error) {
-          console.error('exchangeCodeForSession error:', error.message)
-          router.replace('/login')
+          console.error('exchangeCodeForSession error:', error.message, error)
+          router.replace(`/login?error=${encodeURIComponent(error.message)}`)
         } else {
           router.replace('/dashboard')
         }

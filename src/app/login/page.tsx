@@ -7,6 +7,9 @@ import { Target } from 'lucide-react'
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
+  const error = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('error')
+    : null
 
   const handleGoogleLogin = async () => {
     setLoading(true)
@@ -38,6 +41,12 @@ export default function LoginPage() {
             <h2 className="text-lg font-semibold text-slate-800">Welcome</h2>
             <p className="text-sm text-slate-500 mt-1">Sign in to start planning</p>
           </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2">
+              Sign-in failed: {error}
+            </div>
+          )}
 
           <button
             onClick={handleGoogleLogin}
