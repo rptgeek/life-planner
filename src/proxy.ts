@@ -1,14 +1,14 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
-
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!url || !key) return supabaseResponse
+  if (!url || !key) return NextResponse.next()
 
   try {
+    const { createServerClient } = await import('@supabase/ssr')
+    let response = NextResponse.next({ request })
+
     const supabase = createServerClient(url, key, {
       cookies: {
         getAll() {
@@ -18,21 +18,19 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({ request })
+          response = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           )
         },
       },
     })
 
-    // Refresh session — must be called before any response is returned
     await supabase.auth.getUser()
+    return response
   } catch {
-    // If session refresh fails, pass through — don't block the request
+    return NextResponse.next()
   }
-
-  return supabaseResponse
 }
 
 export const config = {
