@@ -23,6 +23,24 @@ async function gcalFetch(
   return res
 }
 
+// ── List calendars ───────────────────────────────────────────────────────────
+
+export interface CalendarListEntry {
+  id: string
+  summary: string
+  backgroundColor?: string
+  foregroundColor?: string
+  primary?: boolean
+  accessRole: 'freeBusyReader' | 'reader' | 'writer' | 'owner'
+}
+
+export async function listCalendars(token: string): Promise<CalendarListEntry[]> {
+  const res = await gcalFetch(token, '/users/me/calendarList?maxResults=250')
+  if (!res.ok) return []
+  const json = await res.json()
+  return (json.items ?? []) as CalendarListEntry[]
+}
+
 // ── Fetch events for a calendar day ─────────────────────────────────────────
 
 export async function fetchCalendarEvents(
