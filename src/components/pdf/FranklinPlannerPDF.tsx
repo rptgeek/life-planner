@@ -10,276 +10,334 @@ export interface FranklinPlannerData {
   reflection: DailyReflection | null
 }
 
+// ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-  indigo: '#6366f1',
-  indigoDark: '#4338ca',
-  slate900: '#0f172a',
-  slate800: '#1e293b',
-  slate500: '#64748b',
-  slate400: '#94a3b8',
-  slate200: '#e2e8f0',
-  slate100: '#f1f5f9',
-  red: '#dc2626',
-  redLight: '#fef2f2',
-  amber: '#d97706',
-  amberLight: '#fffbeb',
-  blue: '#2563eb',
-  blueLight: '#eff6ff',
-  green: '#16a34a',
-  white: '#ffffff',
+  ink:      '#1a1a2e',
+  slate:    '#334155',
+  mid:      '#64748b',
+  rule:     '#cbd5e1',
+  ruleDark: '#94a3b8',
+  ruleHr:   '#475569',
+  bg:       '#ffffff',
+  bgTint:   '#f8fafc',
+  indigo:   '#4f46e5',
+  indigoLt: '#e0e7ff',
+  red:      '#b91c1c',
+  redLt:    '#fef2f2',
+  amber:    '#b45309',
+  amberLt:  '#fffbeb',
+  blue:     '#1d4ed8',
+  blueLt:   '#eff6ff',
+  green:    '#15803d',
+  greenLt:  '#f0fdf4',
+  purple:   '#7c3aed',
+  purpleLt: '#f5f3ff',
 }
 
-const PRIORITY_COLORS: Record<string, string> = {
-  A: C.red,
-  B: C.amber,
-  C: C.blue,
+const PRIORITY = {
+  A: { label: 'A  ·  CRITICAL',   color: C.red,    bg: C.redLt,    max: 8 },
+  B: { label: 'B  ·  IMPORTANT',  color: C.amber,  bg: C.amberLt,  max: 7 },
+  C: { label: 'C  ·  OPTIONAL',   color: C.blue,   bg: C.blueLt,   max: 5 },
+  D: { label: 'D  ·  DELEGATE',   color: C.purple, bg: C.purpleLt, max: 4 },
 }
 
-const PRIORITY_BG: Record<string, string> = {
-  A: C.redLight,
-  B: C.amberLight,
-  C: C.blueLight,
-}
+// Landscape LETTER: 792 × 612 pt. Margins 28pt (~0.39in) each side.
+// Usable: 736 × 556 pt
+const PW = 736  // usable page width
+const PH = 556  // usable page height
+const COL_L = 290  // left column width  (tasks)
+const GAP   = 14   // column gap
+const COL_R = PW - COL_L - GAP  // right column width  (432pt)
+
+const HEADER_H   = 44
+const MISSION_H  = 28   // collapses when absent
+const COL_BODY_H = PH - HEADER_H  // 512pt
+
+// Right column split
+const TIMELOG_LABEL = 12
+const TIMELOG_ROWS  = 16   // 6 AM – 9 PM
+const TIMELOG_ROW_H = 22
+const TIMELOG_H     = TIMELOG_LABEL + TIMELOG_ROWS * TIMELOG_ROW_H  // 364pt
+const NOTES_H       = COL_BODY_H - TIMELOG_H  // 148pt
 
 const s = StyleSheet.create({
   page: {
     fontFamily: 'Helvetica',
-    fontSize: 9,
-    color: C.slate800,
-    paddingTop: 36,
-    paddingBottom: 36,
-    paddingLeft: 36,
-    paddingRight: 36,
-    backgroundColor: C.white,
+    fontSize: 8,
+    color: C.ink,
+    paddingVertical: 28,
+    paddingHorizontal: 28,
+    backgroundColor: C.bg,
   },
 
-  // ── Header ──────────────────────────────────────────
+  // ── Full-width header ──────────────────────────────────────────────────────
   header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     borderBottomWidth: 2,
-    borderBottomColor: C.slate800,
-    paddingBottom: 6,
+    borderBottomColor: C.ink,
+    paddingBottom: 5,
     marginBottom: 8,
+    height: HEADER_H,
   },
   headerDate: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'Helvetica-Bold',
-    color: C.slate900,
-    letterSpacing: 0.5,
+    color: C.ink,
+    letterSpacing: 0.4,
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
   },
   headerName: {
-    fontSize: 9,
-    color: C.slate500,
-    marginTop: 2,
+    fontSize: 8,
+    color: C.mid,
+  },
+  headerVersion: {
+    fontSize: 6,
+    color: C.rule,
+    marginTop: 1,
   },
 
-  // ── Mission ──────────────────────────────────────────
+  // ── Two-column body ────────────────────────────────────────────────────────
+  body: {
+    flexDirection: 'row',
+    flex: 1,
+  },
+
+  // ── LEFT column — tasks ────────────────────────────────────────────────────
+  leftCol: {
+    width: COL_L,
+    flexDirection: 'column',
+  },
   missionBox: {
     borderWidth: 1,
     borderColor: C.indigo,
     borderRadius: 3,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginBottom: 8,
-  },
-  missionLabel: {
-    fontSize: 6,
-    fontFamily: 'Helvetica-Bold',
-    color: C.indigo,
-    letterSpacing: 1,
-    marginBottom: 3,
+    backgroundColor: C.indigoLt,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginBottom: 7,
+    height: MISSION_H,
+    justifyContent: 'center',
   },
   missionText: {
-    fontSize: 8,
+    fontSize: 7,
     fontStyle: 'italic',
-    color: C.indigoDark,
-    lineHeight: 1.4,
-  },
-
-  // ── Tasks ────────────────────────────────────────────
-  taskSection: {
-    marginBottom: 8,
+    color: C.indigo,
+    lineHeight: 1.35,
   },
   priorityGroup: {
-    marginBottom: 6,
+    marginBottom: 5,
   },
-  priorityLabelRow: {
+  groupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 3,
-    borderBottomWidth: 0.75,
+    borderBottomWidth: 1.5,
+    paddingBottom: 2,
     marginBottom: 2,
   },
-  priorityLabelText: {
-    fontSize: 7,
+  groupLabel: {
+    fontSize: 6.5,
     fontFamily: 'Helvetica-Bold',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
   },
   taskRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingVertical: 3,
     borderBottomWidth: 0.5,
-    borderBottomColor: C.slate200,
-    minHeight: 18,
+    borderBottomColor: C.rule,
+    minHeight: 17,
+    paddingVertical: 2,
   },
-  taskCircle: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  circle: {
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
     borderWidth: 1.25,
-    borderColor: C.slate500,
+    borderColor: C.mid,
     marginRight: 5,
-    marginTop: 1,
+    marginTop: 1.5,
     flexShrink: 0,
   },
   taskNum: {
-    fontSize: 8,
+    fontSize: 7,
     fontFamily: 'Helvetica-Bold',
-    width: 18,
+    width: 16,
     flexShrink: 0,
+    marginTop: 1,
   },
-  taskContent: {
+  taskBody: {
     flex: 1,
     flexDirection: 'column',
   },
   taskTitle: {
-    fontSize: 9,
-    color: C.slate800,
+    fontSize: 8,
+    color: C.ink,
     lineHeight: 1.3,
   },
-  taskBadges: {
+  taskTitleDone: {
+    color: C.ruleDark,
+  },
+  badgeRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 3,
-    marginTop: 2,
+    gap: 2,
+    marginTop: 1.5,
   },
   badge: {
-    fontSize: 6,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 8,
+    fontSize: 5.5,
+    paddingHorizontal: 3,
+    paddingVertical: 0.75,
+    borderRadius: 6,
     borderWidth: 0.75,
   },
-  emptyTaskRow: {
+  emptyRow: {
     borderBottomWidth: 0.5,
-    borderBottomColor: C.slate200,
-    height: 18,
+    borderBottomColor: C.rule,
+    height: 17,
   },
 
-  // ── Time Log ─────────────────────────────────────────
-  sectionLabel: {
+  // ── RIGHT column ───────────────────────────────────────────────────────────
+  rightCol: {
+    width: COL_R,
+    marginLeft: GAP,
+    borderLeftWidth: 1,
+    borderLeftColor: C.ruleDark,
+    paddingLeft: GAP - 2,
+    flexDirection: 'column',
+  },
+
+  // Time log
+  sectionTitle: {
     fontSize: 6,
     fontFamily: 'Helvetica-Bold',
-    color: C.slate400,
-    letterSpacing: 1,
+    color: C.mid,
+    letterSpacing: 1.2,
     marginBottom: 3,
-  },
-  timeLogSection: {
-    marginBottom: 8,
   },
   timeRow: {
     flexDirection: 'row',
     borderBottomWidth: 0.5,
-    borderBottomColor: C.slate200,
-    height: 14,
-    alignItems: 'center',
+    borderBottomColor: C.rule,
+    height: TIMELOG_ROW_H,
+    alignItems: 'flex-start',
+  },
+  timeRowAlt: {
+    backgroundColor: C.bgTint,
   },
   timeLabel: {
     fontSize: 7,
-    color: C.slate400,
-    width: 42,
+    color: C.mid,
+    width: 44,
     flexShrink: 0,
+    paddingTop: 3,
   },
-  timeLine: {
+  timeContent: {
     flex: 1,
+    borderLeftWidth: 0.5,
+    borderLeftColor: C.rule,
+    paddingLeft: 4,
+  },
+  timeHalfLine: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: C.rule,
+    borderBottomStyle: 'dashed',
+    marginTop: TIMELOG_ROW_H / 2 - 1,
+    width: '100%',
   },
 
-  // ── Notes ────────────────────────────────────────────
+  // Notes
   notesSection: {
-    marginBottom: 8,
+    flex: 1,
+    borderTopWidth: 1.5,
+    borderTopColor: C.ruleHr,
+    paddingTop: 5,
+    marginTop: 5,
   },
   notesLine: {
     borderBottomWidth: 0.5,
-    borderBottomColor: C.slate200,
-    height: 18,
-    paddingTop: 3,
+    borderBottomColor: C.rule,
+    flex: 1,
+    paddingTop: 2,
     paddingLeft: 2,
   },
   notesText: {
-    fontSize: 8,
-    color: C.slate800,
+    fontSize: 7.5,
+    color: C.ink,
   },
-
-  // ── Reflection ───────────────────────────────────────
-  reflectionSection: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  reflectionBox: {
+  notesLineWrap: {
+    flexDirection: 'column',
     flex: 1,
-    borderWidth: 1,
-    borderColor: C.slate200,
-    borderRadius: 3,
-    padding: 7,
-  },
-  reflectionLabel: {
-    fontSize: 6,
-    fontFamily: 'Helvetica-Bold',
-    letterSpacing: 0.8,
-    marginBottom: 5,
-  },
-  reflectionLine: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: C.slate200,
-    height: 18,
-    paddingTop: 3,
-    paddingLeft: 2,
-  },
-  reflectionText: {
-    fontSize: 8,
-    color: C.slate800,
   },
 })
 
 const HOURS = [
-  '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM',
-  '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM',
-  '6:00 PM', '7:00 PM', '8:00 PM', '9:00 PM',
+  { label: '6:00 AM',  half: '6:30' },
+  { label: '7:00 AM',  half: '7:30' },
+  { label: '8:00 AM',  half: '8:30' },
+  { label: '9:00 AM',  half: '9:30' },
+  { label: '10:00 AM', half: '10:30' },
+  { label: '11:00 AM', half: '11:30' },
+  { label: '12:00 PM', half: '12:30' },
+  { label: '1:00 PM',  half: '1:30' },
+  { label: '2:00 PM',  half: '2:30' },
+  { label: '3:00 PM',  half: '3:30' },
+  { label: '4:00 PM',  half: '4:30' },
+  { label: '5:00 PM',  half: '5:30' },
+  { label: '6:00 PM',  half: '6:30' },
+  { label: '7:00 PM',  half: '7:30' },
+  { label: '8:00 PM',  half: '8:30' },
+  { label: '9:00 PM',  half: '—' },
 ]
 
-function PriorityGroup({ priority, tasks }: { priority: 'A' | 'B' | 'C'; tasks: Task[] }) {
-  const color = PRIORITY_COLORS[priority]
-  const labels = { A: 'A — MUST DO', B: 'B — SHOULD DO', C: 'C — COULD DO' }
-  const capped = tasks.slice(0, 6)
-  const emptyRows = Math.max(0, 2 - capped.length)
+function PrioritySection({
+  pkey, tasks,
+}: {
+  pkey: 'A' | 'B' | 'C' | 'D'
+  tasks: Task[]
+}) {
+  const p = PRIORITY[pkey]
+  const capped = tasks.slice(0, p.max)
+  // Ensure at least 2 blank rows when section is thin
+  const minBlank = Math.max(0, 2 - capped.length)
 
   return (
     <View style={s.priorityGroup}>
-      <View style={[s.priorityLabelRow, { borderBottomColor: color }]}>
-        <Text style={[s.priorityLabelText, { color }]}>{labels[priority]}</Text>
-        {tasks.length > 6 && (
-          <Text style={{ fontSize: 6, color: C.slate400, marginLeft: 6 }}>
-            +{tasks.length - 6} more
+      <View style={[s.groupHeader, { borderBottomColor: p.color }]}>
+        <Text style={[s.groupLabel, { color: p.color }]}>{p.label}</Text>
+        {tasks.length > p.max && (
+          <Text style={{ fontSize: 5.5, color: C.mid, marginLeft: 6 }}>
+            +{tasks.length - p.max} more
           </Text>
         )}
       </View>
+
       {capped.map((task, i) => (
         <View key={task.id} style={s.taskRow}>
-          <View style={s.taskCircle} />
-          <Text style={[s.taskNum, { color }]}>{priority}{i + 1}</Text>
-          <View style={s.taskContent}>
-            <Text style={[s.taskTitle, task.completed ? { color: C.slate400 } : {}]}>
+          <View style={s.circle} />
+          <Text style={[s.taskNum, { color: p.color }]}>{pkey}{i + 1}</Text>
+          <View style={s.taskBody}>
+            <Text style={[s.taskTitle, task.completed ? s.taskTitleDone : {}]}>
               {task.title}
             </Text>
             {(task.category || task.role) && (
-              <View style={s.taskBadges}>
+              <View style={s.badgeRow}>
                 {task.category && (
-                  <Text style={[s.badge, { borderColor: task.category.color || color, color: task.category.color || color }]}>
+                  <Text style={[s.badge, {
+                    borderColor: task.category.color || p.color,
+                    color: task.category.color || p.color,
+                  }]}>
                     {task.category.name}
                   </Text>
                 )}
                 {task.role && (
-                  <Text style={[s.badge, { borderColor: task.role.color || C.slate400, color: task.role.color || C.slate400 }]}>
+                  <Text style={[s.badge, {
+                    borderColor: task.role.color || C.mid,
+                    color: task.role.color || C.mid,
+                  }]}>
                     {task.role.name}
                   </Text>
                 )}
@@ -288,37 +346,14 @@ function PriorityGroup({ priority, tasks }: { priority: 'A' | 'B' | 'C'; tasks: 
           </View>
         </View>
       ))}
-      {Array.from({ length: emptyRows }).map((_, i) => (
-        <View key={`empty-${i}`} style={s.emptyTaskRow} />
-      ))}
-    </View>
-  )
-}
 
-function ReflectionBox({
-  label,
-  color,
-  text,
-  lines = 4,
-}: {
-  label: string
-  color: string
-  text: string | null
-  lines?: number
-}) {
-  const filled = text ? text.split('\n').filter(Boolean) : []
-  const emptyLines = Math.max(0, lines - filled.length)
-
-  return (
-    <View style={s.reflectionBox}>
-      <Text style={[s.reflectionLabel, { color }]}>{label}</Text>
-      {filled.map((line, i) => (
-        <View key={i} style={s.reflectionLine}>
-          <Text style={s.reflectionText}>{line}</Text>
-        </View>
+      {/* D section is always blank (no app data) */}
+      {pkey === 'D' && Array.from({ length: 3 }).map((_, i) => (
+        <View key={i} style={s.emptyRow} />
       ))}
-      {Array.from({ length: emptyLines }).map((_, i) => (
-        <View key={i} style={s.reflectionLine} />
+
+      {pkey !== 'D' && Array.from({ length: minBlank }).map((_, i) => (
+        <View key={i} style={s.emptyRow} />
       ))}
     </View>
   )
@@ -326,74 +361,83 @@ function ReflectionBox({
 
 export function FranklinPlannerPDF({ data }: { data: FranklinPlannerData }) {
   const { selectedDate, profile, tasks, reflection } = data
-  const dateStr = format(parseISO(selectedDate), 'EEEE, MMMM d, yyyy').toUpperCase()
+  const dateStr = format(parseISO(selectedDate), 'EEEE · MMMM d, yyyy').toUpperCase()
 
-  const grouped = {
-    A: tasks.filter(t => t.priority === 'A').sort((a, b) => a.sort_order - b.sort_order),
-    B: tasks.filter(t => t.priority === 'B').sort((a, b) => a.sort_order - b.sort_order),
-    C: tasks.filter(t => t.priority === 'C').sort((a, b) => a.sort_order - b.sort_order),
-  }
+  const byPriority = (p: 'A' | 'B' | 'C') =>
+    tasks.filter(t => t.priority === p).sort((a, b) => a.sort_order - b.sort_order)
 
-  const notesLines = reflection?.notes?.split('\n').filter(Boolean) ?? []
-  const emptyNoteLines = Math.max(0, 6 - notesLines.length)
+  const notesLines = (reflection?.notes ?? '').split('\n').filter(Boolean)
+  const approxNoteLineCount = Math.floor(NOTES_H / 18) - 1  // ~7 lines
 
   return (
-    <Document title={`Daily Plan — ${dateStr}`} author={profile?.display_name ?? 'Life Planner'}>
-      <Page size="LETTER" style={s.page}>
+    <Document
+      title={`Daily Plan · ${dateStr}`}
+      author={profile?.display_name ?? 'Life Planner'}
+    >
+      <Page size="LETTER" orientation="landscape" style={s.page}>
 
-        {/* ── Header ── */}
+        {/* ── Full-width header ── */}
         <View style={s.header}>
           <Text style={s.headerDate}>{dateStr}</Text>
-          {profile?.display_name && (
-            <Text style={s.headerName}>{profile.display_name}</Text>
-          )}
-        </View>
-
-        {/* ── Mission ── */}
-        {profile?.mission_statement && (
-          <View style={s.missionBox}>
-            <Text style={s.missionLabel}>MISSION</Text>
-            <Text style={s.missionText}>&ldquo;{profile.mission_statement}&rdquo;</Text>
+          <View style={s.headerRight}>
+            {profile?.display_name && (
+              <Text style={s.headerName}>{profile.display_name}</Text>
+            )}
+            <Text style={s.headerVersion}>Life Planner</Text>
           </View>
-        )}
-
-        {/* ── Tasks ── */}
-        <View style={s.taskSection}>
-          <PriorityGroup priority="A" tasks={grouped.A} />
-          <PriorityGroup priority="B" tasks={grouped.B} />
-          <PriorityGroup priority="C" tasks={grouped.C} />
         </View>
 
-        {/* ── Time Log ── */}
-        <View style={s.timeLogSection}>
-          <Text style={s.sectionLabel}>TIME LOG</Text>
-          {HOURS.map(hour => (
-            <View key={hour} style={s.timeRow}>
-              <Text style={s.timeLabel}>{hour}</Text>
-              <View style={s.timeLine} />
+        {/* ── Two-column body ── */}
+        <View style={s.body}>
+
+          {/* ── LEFT: Tasks ── */}
+          <View style={s.leftCol}>
+            {profile?.mission_statement && (
+              <View style={s.missionBox}>
+                <Text style={s.missionText}>
+                  &ldquo;{profile.mission_statement}&rdquo;
+                </Text>
+              </View>
+            )}
+
+            <PrioritySection pkey="A" tasks={byPriority('A')} />
+            <PrioritySection pkey="B" tasks={byPriority('B')} />
+            <PrioritySection pkey="C" tasks={byPriority('C')} />
+            <PrioritySection pkey="D" tasks={[]} />
+          </View>
+
+          {/* ── RIGHT: Time log + Notes ── */}
+          <View style={s.rightCol}>
+            {/* Time log */}
+            <Text style={s.sectionTitle}>APPOINTMENTS  ·  SCHEDULE</Text>
+            {HOURS.map((h, i) => (
+              <View key={h.label} style={[s.timeRow, i % 2 === 1 ? s.timeRowAlt : {}]}>
+                <Text style={s.timeLabel}>{h.label}</Text>
+                <View style={s.timeContent}>
+                  <View style={s.timeHalfLine} />
+                </View>
+              </View>
+            ))}
+
+            {/* Notes */}
+            <View style={s.notesSection}>
+              <Text style={[s.sectionTitle, { marginBottom: 4 }]}>NOTES</Text>
+              <View style={s.notesLineWrap}>
+                {notesLines.slice(0, approxNoteLineCount).map((line, i) => (
+                  <View key={i} style={s.notesLine}>
+                    <Text style={s.notesText}>{line}</Text>
+                  </View>
+                ))}
+                {Array.from({
+                  length: Math.max(0, approxNoteLineCount - notesLines.length),
+                }).map((_, i) => (
+                  <View key={i} style={s.notesLine} />
+                ))}
+              </View>
             </View>
-          ))}
-        </View>
+          </View>
 
-        {/* ── Notes ── */}
-        <View style={s.notesSection}>
-          <Text style={s.sectionLabel}>NOTES</Text>
-          {notesLines.map((line, i) => (
-            <View key={i} style={s.notesLine}>
-              <Text style={s.notesText}>{line}</Text>
-            </View>
-          ))}
-          {Array.from({ length: emptyNoteLines }).map((_, i) => (
-            <View key={i} style={s.notesLine} />
-          ))}
         </View>
-
-        {/* ── Reflection ── */}
-        <View style={s.reflectionSection}>
-          <ReflectionBox label="WINS" color={C.green} text={reflection?.wins ?? null} />
-          <ReflectionBox label="IMPROVE" color={C.amber} text={reflection?.improvements ?? null} />
-        </View>
-
       </Page>
     </Document>
   )
