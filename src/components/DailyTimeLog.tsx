@@ -10,6 +10,7 @@ interface DailyTimeLogProps {
   tasks: Task[]
   loading: boolean
   tokenExpired: boolean
+  calendarCount: number
   onReconnect: () => void
   onRefresh: () => void
 }
@@ -55,7 +56,7 @@ function formatTime(dateTimeStr: string): string {
 }
 
 export default function DailyTimeLog({
-  events, tasks, loading, tokenExpired, onReconnect, onRefresh,
+  events, tasks, loading, tokenExpired, calendarCount, onReconnect, onRefresh,
 }: DailyTimeLogProps) {
   const [collapsed, setCollapsed] = useState(false)
   const { hasConfigured } = useCalendarPreferences()
@@ -85,6 +86,11 @@ export default function DailyTimeLog({
           <span className="text-xs font-normal text-slate-400 ml-1">
             {collapsed ? '▶' : '▼'}
           </span>
+          {!tokenExpired && calendarCount > 0 && (
+            <span className="text-xs text-slate-400 font-normal">
+              · {calendarCount} calendar{calendarCount !== 1 ? 's' : ''}
+            </span>
+          )}
         </button>
         <div className="flex items-center gap-2">
           {!tokenExpired && (

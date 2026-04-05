@@ -45,16 +45,18 @@ export async function listCalendars(token: string): Promise<CalendarListEntry[]>
 
 export async function fetchCalendarEvents(
   token: string,
-  date: string  // 'yyyy-MM-dd'
+  date: string,  // 'yyyy-MM-dd'
+  calendarId: string = 'primary'
 ): Promise<CalendarEvent[]> {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
   const timeMin = encodeURIComponent(`${date}T00:00:00`)
   const timeMax = encodeURIComponent(`${date}T23:59:59`)
   const tzEnc = encodeURIComponent(tz)
+  const calEnc = encodeURIComponent(calendarId)
 
   const res = await gcalFetch(
     token,
-    `/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&timeZone=${tzEnc}&singleEvents=true&orderBy=startTime&maxResults=50`
+    `/calendars/${calEnc}/events?timeMin=${timeMin}&timeMax=${timeMax}&timeZone=${tzEnc}&singleEvents=true&orderBy=startTime&maxResults=50`
   )
   if (!res.ok) return []
   const json = await res.json()

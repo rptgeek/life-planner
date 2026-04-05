@@ -23,7 +23,7 @@ export default function DashboardPage() {
   const { roles } = useRoles()
   const { reflection, saveReflection } = useReflection(selectedDate)
   const { profile } = useProfile()
-  const { events: calEvents, loading: calLoading, tokenExpired, refresh: calRefresh } = useGoogleCalendar(selectedDate)
+  const { events: calEvents, loading: calLoading, tokenExpired, refresh: calRefresh, calendarCount } = useGoogleCalendar(selectedDate)
   const handleReconnectCalendar = async () => {
     try {
       await requestCalendarToken()
@@ -205,6 +205,7 @@ export default function DashboardPage() {
         tasks={tasks}
         loading={calLoading}
         tokenExpired={tokenExpired}
+        calendarCount={calendarCount}
         onReconnect={handleReconnectCalendar}
         onRefresh={calRefresh}
       />
