@@ -28,12 +28,14 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
     A: 'border-l-red-500 bg-red-50/50',
     B: 'border-l-amber-500 bg-amber-50/30',
     C: 'border-l-blue-500 bg-blue-50/30',
+    D: 'border-l-purple-500 bg-purple-50/30',
   }
 
   const priorityBadge = {
     A: 'bg-red-100 text-red-700',
     B: 'bg-amber-100 text-amber-700',
     C: 'bg-blue-100 text-blue-700',
+    D: 'bg-purple-100 text-purple-700',
   }
 
   const saveTitle = () => {
@@ -184,13 +186,16 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
           <div className="flex items-center gap-2 pt-1 flex-wrap">
             {/* Priority change */}
             <div className="flex gap-1">
-              {(['A', 'B', 'C'] as const).map(p => (
+              {(['A', 'B', 'C', 'D'] as const).map(p => (
                 <button
                   key={p}
                   onClick={() => onUpdate(task.id, { priority: p })}
                   className={`text-xs font-bold w-6 h-6 rounded transition-colors ${
                     task.priority === p
-                      ? p === 'A' ? 'bg-red-500 text-white' : p === 'B' ? 'bg-amber-500 text-white' : 'bg-blue-500 text-white'
+                      ? p === 'A' ? 'bg-red-500 text-white'
+                      : p === 'B' ? 'bg-amber-500 text-white'
+                      : p === 'C' ? 'bg-blue-500 text-white'
+                      : 'bg-purple-500 text-white'
                       : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                   }`}
                 >

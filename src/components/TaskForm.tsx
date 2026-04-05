@@ -13,7 +13,7 @@ interface TaskFormProps {
   onSubmit: (task: {
     title: string
     description: string
-    priority: 'A' | 'B' | 'C'
+    priority: 'A' | 'B' | 'C' | 'D'
     category_id: string | null
     goal_id: string | null
     role_id: string | null
@@ -26,7 +26,7 @@ export default function TaskForm({ categories, goals, roles, scheduledDate, onSu
   const [expanded, setExpanded] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState<'A' | 'B' | 'C'>('B')
+  const [priority, setPriority] = useState<'A' | 'B' | 'C' | 'D'>('B')
   const [categoryId, setCategoryId] = useState<string>('')
   const [goalId, setGoalId] = useState<string>('')
   const [roleId, setRoleId] = useState<string>('')
@@ -127,16 +127,18 @@ export default function TaskForm({ categories, goals, roles, scheduledDate, onSu
             <div>
               <label className="text-xs text-slate-500 block mb-1">Priority</label>
               <div className="flex gap-1">
-                {(['A', 'B', 'C'] as const).map(p => (
+                {(['A', 'B', 'C', 'D'] as const).map(p => (
                   <button
                     key={p}
                     type="button"
                     onClick={() => setPriority(p)}
+                    title={p === 'D' ? 'Delegate' : undefined}
                     className={`flex-1 text-xs font-bold py-1.5 rounded transition-colors ${
                       priority === p
                         ? p === 'A' ? 'bg-red-500 text-white'
                         : p === 'B' ? 'bg-amber-500 text-white'
-                        : 'bg-blue-500 text-white'
+                        : p === 'C' ? 'bg-blue-500 text-white'
+                        : 'bg-purple-500 text-white'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >

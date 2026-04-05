@@ -63,7 +63,7 @@ export interface Task {
   role_id: string | null
   title: string
   description: string | null
-  priority: 'A' | 'B' | 'C'
+  priority: 'A' | 'B' | 'C' | 'D'
   due_date: string | null
   scheduled_date: string | null
   in_progress: boolean

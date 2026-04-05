@@ -28,12 +28,14 @@ export default function DashboardPage() {
     const a: Task[] = []
     const b: Task[] = []
     const c: Task[] = []
+    const d: Task[] = []
     tasks.forEach(t => {
       if (t.priority === 'A') a.push(t)
       else if (t.priority === 'B') b.push(t)
-      else c.push(t)
+      else if (t.priority === 'C') c.push(t)
+      else d.push(t)
     })
-    return { A: a, B: b, C: c }
+    return { A: a, B: b, C: c, D: d }
   }, [tasks])
 
   const completedCount = tasks.filter(t => t.completed).length
@@ -56,14 +58,15 @@ export default function DashboardPage() {
     if (!destination) return
     if (source.droppableId === destination.droppableId && source.index === destination.index) return
 
-    const sourcePriority = source.droppableId as 'A' | 'B' | 'C'
-    const destPriority = destination.droppableId as 'A' | 'B' | 'C'
+    const sourcePriority = source.droppableId as 'A' | 'B' | 'C' | 'D'
+    const destPriority = destination.droppableId as 'A' | 'B' | 'C' | 'D'
 
     // Clone groups
     const newGrouped = {
       A: [...grouped.A],
       B: [...grouped.B],
       C: [...grouped.C],
+      D: [...grouped.D],
     }
 
     // Remove from source group
@@ -77,6 +80,7 @@ export default function DashboardPage() {
       ...newGrouped.A.map((t, i) => ({ ...t, sort_order: i })),
       ...newGrouped.B.map((t, i) => ({ ...t, sort_order: i })),
       ...newGrouped.C.map((t, i) => ({ ...t, sort_order: i })),
+      ...newGrouped.D.map((t, i) => ({ ...t, sort_order: i })),
     ]
 
     reorderTasks(allUpdated)
@@ -193,12 +197,13 @@ export default function DashboardPage() {
 
       {/* Task Groups with Drag and Drop */}
       <DragDropContext onDragEnd={onDragEnd}>
-        {(['A', 'B', 'C'] as const).map(priority => {
+        {(['A', 'B', 'C', 'D'] as const).map(priority => {
           const priorityTasks = grouped[priority]
           const labels = {
-            A: { title: 'Priority A — Must Do', color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' },
-            B: { title: 'Priority B — Should Do', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
-            C: { title: 'Priority C — Could Do', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+            A: { title: 'Priority A — Must Do',   color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-red-200' },
+            B: { title: 'Priority B — Should Do', color: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200' },
+            C: { title: 'Priority C — Could Do',  color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-blue-200' },
+            D: { title: 'Priority D — Delegate',  color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
           }
           const label = labels[priority]
 
