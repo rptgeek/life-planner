@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { format, addDays, subDays, parseISO } from 'date-fns'
 import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Sparkles } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
@@ -12,7 +12,7 @@ import TaskCard from '@/components/TaskCard'
 import DailyTimeLog from '@/components/DailyTimeLog'
 import PlanMyDay from '@/components/PlanMyDay'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
-import { requestCalendarToken } from '@/lib/useGoogleCalendarToken'
+import { requestCalendarToken, preloadGIS } from '@/lib/useGoogleCalendarToken'
 
 export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -32,6 +32,9 @@ export default function DashboardPage() {
       console.error('Calendar connect failed:', e)
     }
   }
+
+  // Pre-load GIS script on mount so it's ready when user clicks Connect
+  useEffect(() => { preloadGIS() }, [])
 
   const isToday = selectedDate === format(new Date(), 'yyyy-MM-dd')
 
