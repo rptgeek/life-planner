@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
 import type { FranklinPlannerData } from './FranklinPlannerPDF'
 
 export default function PDFDownloadButton({ data }: { data: FranklinPlannerData }) {
   const [isGenerating, setIsGenerating] = useState(false)
-  const anchorRef = useRef<HTMLAnchorElement>(null)
 
   const handleDownload = async () => {
     if (isGenerating) return
@@ -22,11 +21,8 @@ export default function PDFDownloadButton({ data }: { data: FranklinPlannerData 
         React.createElement(FranklinPlannerPDF, { data }) as any
       ).toBlob()
       const url = URL.createObjectURL(blob)
-      const a = anchorRef.current!
-      a.href = url
-      a.download = `daily-plan-${data.selectedDate}.pdf`
-      a.click()
-      setTimeout(() => URL.revokeObjectURL(url), 10000)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
     } catch (err) {
       console.error('PDF generation failed:', err)
     } finally {
@@ -35,9 +31,7 @@ export default function PDFDownloadButton({ data }: { data: FranklinPlannerData 
   }
 
   return (
-    <>
-      <a ref={anchorRef} className="hidden" aria-hidden />
-      <button
+    <button
         onClick={handleDownload}
         disabled={isGenerating}
         className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-sm hover:shadow transition-all disabled:opacity-60"
@@ -49,6 +43,5 @@ export default function PDFDownloadButton({ data }: { data: FranklinPlannerData 
         }
         {isGenerating ? 'Generating…' : 'Download PDF'}
       </button>
-    </>
   )
 }
