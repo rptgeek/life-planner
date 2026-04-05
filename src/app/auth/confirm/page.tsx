@@ -8,18 +8,14 @@ export default function AuthConfirmPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('code')
-    if (!code) {
-      router.replace('/login')
-      return
-    }
-
+    // Implicit flow: session is in the URL hash, getSession() picks it up automatically
     createClient()
-      .auth.exchangeCodeForSession(code)
-      .then(({ error }) => {
-        if (error) {
-          console.error('exchangeCodeForSession error:', error.message, error)
-          router.replace(`/login?error=${encodeURIComponent(error.message)}`)
+      .auth.getSession()
+      .then(({ data, error }) => {
+        if (error || !data.session) {
+          const msg = error?.message ?? 'No session returned'
+          console.error('auth confirm error:', msg)
+          router.replace(`/login?error=${encodeURIComponent(msg)}`)
         } else {
           router.replace('/dashboard')
         }
