@@ -12,7 +12,7 @@ import TaskCard from '@/components/TaskCard'
 import DailyTimeLog from '@/components/DailyTimeLog'
 import PlanMyDay from '@/components/PlanMyDay'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
-import { createClient } from '@/lib/supabase'
+import { requestCalendarToken } from '@/lib/useGoogleCalendarToken'
 
 export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -24,17 +24,13 @@ export default function DashboardPage() {
   const { reflection, saveReflection } = useReflection(selectedDate)
   const { profile } = useProfile()
   const { events: calEvents, loading: calLoading, tokenExpired, refresh: calRefresh } = useGoogleCalendar(selectedDate)
-  const supabase = createClient()
-
-  const handleReconnectCalendar = () => {
-    supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/confirm`,
-        scopes: 'https://www.googleapis.com/auth/calendar',
-        queryParams: { prompt: 'consent', access_type: 'online' },
-      },
-    })
+  const handleReconnectCalendar = async () => {
+    try {
+      await requestCalendarToken()
+      calRefresh()
+    } catch (e) {
+      console.error('Calendar connect failed:', e)
+    }
   }
 
   const isToday = selectedDate === format(new Date(), 'yyyy-MM-dd')

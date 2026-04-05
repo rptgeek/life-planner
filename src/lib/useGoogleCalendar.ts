@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import type { CalendarEvent } from './types'
-import { fetchCalendarEvents, getGoogleToken, GoogleTokenExpiredError } from './googleCalendar'
+import { fetchCalendarEvents, GoogleTokenExpiredError } from './googleCalendar'
+import { getCachedCalendarToken } from './useGoogleCalendarToken'
 
 export function useGoogleCalendar(date: string) {
   const [events, setEvents] = useState<CalendarEvent[]>([])
@@ -10,7 +11,7 @@ export function useGoogleCalendar(date: string) {
   const [tokenExpired, setTokenExpired] = useState(false)
 
   const refresh = useCallback(async () => {
-    const token = await getGoogleToken()
+    const token = getCachedCalendarToken()
     if (!token) {
       setTokenExpired(true)
       return

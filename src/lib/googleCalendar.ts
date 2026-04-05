@@ -118,11 +118,12 @@ export async function deleteCalendarEvent(
   if (!res.ok && res.status !== 410) throw new Error(`Failed to delete event: ${res.status}`)
 }
 
-// ── Get token from Supabase session ─────────────────────────────────────────
+// ── Get token (GIS sessionStorage only) ─────────────────────────────────────
 
-export async function getGoogleToken(): Promise<string | null> {
-  const { createClient } = await import('./supabase')
-  const supabase = createClient()
-  const { data } = await supabase.auth.getSession()
-  return data.session?.provider_token ?? sessionStorage.getItem('gcal_token')
+export function getGoogleToken(): string | null {
+  if (typeof window === 'undefined') return null
+  const token = sessionStorage.getItem('gcal_token')
+  const expiry = Number(sessionStorage.getItem('gcal_token_expiry') ?? 0)
+  if (!token || Date.now() > expiry) return null
+  return token
 }
