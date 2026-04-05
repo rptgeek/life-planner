@@ -2,13 +2,14 @@
 
 import { useState, useMemo } from 'react'
 import { format, addDays, subDays, parseISO } from 'date-fns'
-import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Printer, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar as CalIcon, Sun, Sunrise, Moon, Sparkles } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { useTasks, useCategories, useGoals, useRoles, useReflection, useProfile } from '@/lib/hooks'
 import { Task } from '@/lib/types'
 import TaskForm from '@/components/TaskForm'
 import TaskCard from '@/components/TaskCard'
 import PlanMyDay from '@/components/PlanMyDay'
+import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
 
 export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -105,15 +106,8 @@ export default function DashboardPage() {
           Plan My Day
         </button>
 
-        {/* Print button */}
-        <button
-          onClick={() => window.print()}
-          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-sm hover:shadow transition-all"
-          title="Print daily plan"
-        >
-          <Printer size={14} />
-          Print
-        </button>
+        {/* Download PDF button */}
+        <PDFDownloadButton data={{ selectedDate, profile, tasks, reflection }} />
 
         {/* Date navigator */}
         <div className="flex items-center gap-2 bg-white rounded-xl border border-slate-200 px-2 py-1.5 shadow-sm">
