@@ -7,36 +7,41 @@ export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login`)
+    return NextResponse.redirect(`${origin}/login?error=no_code`)
   }
 
-  // Create the redirect response first so we can attach cookies to it
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!url || !key) {
+    console.error('[auth/callback] Missing Supabase env vars')
+    return NextResponse.redirect(`${origin}/login?error=config`)
+  }
+
   const response = NextResponse.redirect(`${origin}/dashboard`)
 
   try {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options)
-            })
-          },
+    const supabase = createServerClient(url, key, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
         },
-      }
-    )
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    })
 
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (error) {
-      return NextResponse.redirect(`${origin}/login`)
+      console.error('[auth/callback] exchangeCodeForSession error:', error.message)
+      return NextResponse.redirect(`${origin}/login?error=exchange`)
     }
-  } catch {
-    return NextResponse.redirect(`${origin}/login`)
+  } catch (e) {
+    console.error('[auth/callback] unexpected error:', e)
+    return NextResponse.redirect(`${origin}/login?error=unexpected`)
   }
 
   return response
