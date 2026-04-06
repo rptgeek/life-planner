@@ -52,7 +52,9 @@ Plans:
   1. Creating a scheduled task pushes the event to the user's configured default calendar, not always `primary`
   2. Updating a scheduled task updates the event in whichever calendar it was originally pushed to
   3. Deleting or completing a scheduled task removes the event from the correct calendar
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 03-01-PLAN.md — Route GCal create/update/delete through configured default calendar
 
 ## Progress
 
@@ -63,4 +65,14 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Calendar Preferences | 2/2 | In Progress (checkpoint pending) |  |
 | 2. Calendar View Rendering | 0/TBD | Not started | - |
-| 3. Task Sync Routing | 0/TBD | Not started | - |
+| 3. Task Sync Routing | 0/1 | Not started | - |
+
+### Phase 4: Goals and Values task reporting dashboard
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 3
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 4 to break down)
