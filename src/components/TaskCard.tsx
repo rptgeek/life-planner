@@ -6,6 +6,7 @@ import { Task, Category, Role } from '@/lib/types'
 import { format } from 'date-fns'
 import { DraggableProvidedDragHandleProps } from '@hello-pangea/dnd'
 import { createCalendarEvent, updateCalendarEvent, deleteCalendarEvent, getGoogleToken, GoogleTokenExpiredError } from '@/lib/googleCalendar'
+import { useCalendarPreferences } from '@/lib/useCalendarPreferences'
 
 interface TaskCardProps {
   task: Task
@@ -28,6 +29,7 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
   const [durationMin, setDurationMin] = useState(task.duration_minutes ?? 30)
   const [calSyncing, setCalSyncing] = useState(false)
   const [calError, setCalError] = useState<string | null>(null)
+  const { defaultPushId } = useCalendarPreferences()
 
   const priorityStyles = {
     A: 'border-l-red-500 bg-red-50/50',
@@ -280,9 +282,9 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
                     if (!token) throw new GoogleTokenExpiredError()
                     const augmented = { ...task, start_time: startTime + ':00', duration_minutes: durationMin }
                     if (task.google_event_id) {
-                      await updateCalendarEvent(token, task.google_event_id, augmented)
+                      await updateCalendarEvent(token, task.google_event_id, augmented, defaultPushId ?? undefined)
                     } else {
-                      const eventId = await createCalendarEvent(token, augmented)
+                      const eventId = await createCalendarEvent(token, augmented, defaultPushId ?? undefined)
                       onUpdate(task.id, { google_event_id: eventId })
                     }
                   } catch (e) {
@@ -307,7 +309,7 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
                   try {
                     const token = await getGoogleToken()
                     if (!token) throw new GoogleTokenExpiredError()
-                    await deleteCalendarEvent(token, task.google_event_id!)
+                    await deleteCalendarEvent(token, task.google_event_id!, defaultPushId ?? undefined)
                     onUpdate(task.id, { google_event_id: null, start_time: null, duration_minutes: null })
                     setStartTime('')
                   } catch (e) {
