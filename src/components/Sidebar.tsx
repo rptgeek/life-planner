@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Target, Compass, CalendarDays,
-  Settings, LogOut, Menu, X, ChevronRight, PanelLeftClose, PanelLeftOpen
+  Settings, LogOut, Menu, X, ChevronRight, PanelLeftClose, PanelLeftOpen, BarChart2
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useProfile } from '@/lib/hooks'
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { href: '/weekly', label: 'Weekly View', icon: CalendarDays },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/mission', label: 'Mission & Values', icon: Compass },
+  { href: '/reports', label: 'Reports', icon: BarChart2 },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 
