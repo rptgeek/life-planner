@@ -98,9 +98,10 @@ function taskToEventBody(task: Task & { start_time: string; duration_minutes: nu
 
 export async function createCalendarEvent(
   token: string,
-  task: Task & { start_time: string; duration_minutes: number }
+  task: Task & { start_time: string; duration_minutes: number },
+  calendarId: string = 'primary'
 ): Promise<string> {
-  const res = await gcalFetch(token, '/calendars/primary/events', {
+  const res = await gcalFetch(token, `/calendars/${encodeURIComponent(calendarId)}/events`, {
     method: 'POST',
     body: JSON.stringify(taskToEventBody(task)),
   })
@@ -114,9 +115,10 @@ export async function createCalendarEvent(
 export async function updateCalendarEvent(
   token: string,
   eventId: string,
-  task: Task & { start_time: string; duration_minutes: number }
+  task: Task & { start_time: string; duration_minutes: number },
+  calendarId: string = 'primary'
 ): Promise<void> {
-  const res = await gcalFetch(token, `/calendars/primary/events/${eventId}`, {
+  const res = await gcalFetch(token, `/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`, {
     method: 'PUT',
     body: JSON.stringify(taskToEventBody(task)),
   })
@@ -127,9 +129,10 @@ export async function updateCalendarEvent(
 
 export async function deleteCalendarEvent(
   token: string,
-  eventId: string
+  eventId: string,
+  calendarId: string = 'primary'
 ): Promise<void> {
-  const res = await gcalFetch(token, `/calendars/primary/events/${eventId}`, {
+  const res = await gcalFetch(token, `/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`, {
     method: 'DELETE',
   })
   // 204 = success, 410 = already deleted — both are fine
