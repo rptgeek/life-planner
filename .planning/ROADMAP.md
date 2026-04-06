@@ -66,7 +66,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Calendar Preferences | 2/2 | In Progress (checkpoint pending) |  |
 | 2. Calendar View Rendering | 0/TBD | Not started | - |
 | 3. Task Sync Routing | 1/1 | Complete    | 2026-04-06 |
-| 4. Goals & Values Reporting | 2/3 | In Progress|  |
+| 4. Goals & Values Reporting | 3/3 | Complete   | 2026-04-06 |
 
 ### Phase 4: Goals and Values task reporting dashboard
 
@@ -79,9 +79,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
   3. Tasks with no goal appear in a collapsible "Unlinked Tasks" section
   4. Weekly trend chart shows tasks completed per goal over time
   5. Sidebar has a Reports nav entry
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 04-01-PLAN.md — Data layer: recharts install, report types, useReportData hook
 - [x] 04-02-PLAN.md — UI components: GoalReportCard, ForgottenGoalsCallout, UnlinkedTasksSection, TrendChartsSection
-- [ ] 04-03-PLAN.md — Page assembly: /reports route, Sidebar nav entry, wire everything
+- [x] 04-03-PLAN.md — Page assembly: /reports route, Sidebar nav entry, wire everything
