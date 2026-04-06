@@ -92,6 +92,29 @@ export interface CalendarEvent {
   allDay?: boolean
 }
 
+export interface GoalReport {
+  goal: Goal
+  openCount: number
+  completedCount: number
+  overdueCount: number
+  totalCount: number
+  completionRate: number // 0-100
+}
+
+export interface TrendDataPoint {
+  weekLabel: string    // e.g. "Mar 31"
+  weekStart: string    // ISO date string for the Monday
+  [goalTitle: string]: number | string // dynamic keys per goal title = completed count
+}
+
+export interface ReportData {
+  goalReports: GoalReport[]
+  forgottenGoals: Goal[]        // active goals with zero tasks
+  unlinkedTasks: Task[]         // tasks with goal_id === null
+  trendData: TrendDataPoint[]   // weekly completed-task counts per goal
+  loading: boolean
+}
+
 export interface DailyReflection {
   id: string
   user_id: string
