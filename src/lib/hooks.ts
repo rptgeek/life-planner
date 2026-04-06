@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from './supabase'
-import { Category, Goal, Task, Profile, DailyReflection, Value, Role } from './types'
+import { Category, Goal, Task, Profile, DailyReflection, Value, Role, GoalReport, TrendDataPoint, ReportData } from './types'
 import { User } from '@supabase/supabase-js'
 
 const supabase = createClient()
@@ -348,4 +348,97 @@ export function useValues() {
   }
 
   return { values, addValue, updateValue, deleteValue, refetch: fetchValues }
+}
+
+export function useReportData(): ReportData {
+  const { goals, loading: goalsLoading } = useGoals()
+  const { tasks, loading: tasksLoading } = useTasks()
+
+  const activeGoals = useMemo(() => goals.filter(g => g.status === 'active'), [goals])
+
+  const goalReports = useMemo((): GoalReport[] => {
+    const today = new Date().toISOString().split('T')[0]
+    return activeGoals.map(goal => {
+      const goalTasks = tasks.filter(t => t.goal_id === goal.id)
+      const openCount = goalTasks.filter(t => !t.completed).length
+      const completedCount = goalTasks.filter(t => t.completed).length
+      const overdueCount = goalTasks.filter(
+        t => !t.completed && t.due_date !== null && t.due_date < today
+      ).length
+      const totalCount = openCount + completedCount
+      const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+      return { goal, openCount, completedCount, overdueCount, totalCount, completionRate }
+    })
+  }, [activeGoals, tasks])
+
+  const forgottenGoals = useMemo((): Goal[] => {
+    return activeGoals.filter(goal => !tasks.some(t => t.goal_id === goal.id))
+  }, [activeGoals, tasks])
+
+  const unlinkedTasks = useMemo((): Task[] => {
+    return tasks.filter(t => t.goal_id === null)
+  }, [tasks])
+
+  const trendData = useMemo((): TrendDataPoint[] => {
+    // Build 8-week window ending on the most recent Sunday (current week)
+    const today = new Date()
+    // Find Monday of current week
+    const dayOfWeek = today.getDay() // 0 = Sunday
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+    const currentMonday = new Date(today)
+    currentMonday.setHours(0, 0, 0, 0)
+    currentMonday.setDate(today.getDate() + diffToMonday)
+
+    const weeks: { weekStart: Date; weekLabel: string; weekStartStr: string }[] = []
+    for (let i = 7; i >= 0; i--) {
+      const monday = new Date(currentMonday)
+      monday.setDate(currentMonday.getDate() - i * 7)
+      const weekStartStr = monday.toISOString().split('T')[0]
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      const weekLabel = `${monthNames[monday.getMonth()]} ${monday.getDate()}`
+      weeks.push({ weekStart: monday, weekLabel, weekStartStr })
+    }
+
+    // Gather completed tasks with completed_at
+    const completedTasks = tasks.filter(t => t.completed && t.completed_at !== null)
+
+    // Build goal title -> week index -> count
+    const goalTitleSet = new Set<string>()
+    const counts: Record<string, Record<number, number>> = {} // goalTitle -> weekIndex -> count
+
+    for (const task of completedTasks) {
+      if (task.goal_id === null) continue
+      const goal = activeGoals.find(g => g.id === task.goal_id)
+      if (!goal) continue
+      const completedDate = task.completed_at!.split('T')[0]
+      // Find which week this falls in
+      const weekIndex = weeks.findIndex((w, idx) => {
+        const nextWeek = weeks[idx + 1]
+        return completedDate >= w.weekStartStr && (nextWeek ? completedDate < nextWeek.weekStartStr : true)
+      })
+      if (weekIndex === -1) continue
+      goalTitleSet.add(goal.title)
+      if (!counts[goal.title]) counts[goal.title] = {}
+      counts[goal.title][weekIndex] = (counts[goal.title][weekIndex] || 0) + 1
+    }
+
+    // Only include goals that have at least one completion across all weeks
+    if (goalTitleSet.size === 0) return []
+
+    return weeks.map((week, idx) => {
+      const point: TrendDataPoint = { weekLabel: week.weekLabel, weekStart: week.weekStartStr }
+      for (const title of goalTitleSet) {
+        point[title] = counts[title]?.[idx] ?? 0
+      }
+      return point
+    })
+  }, [activeGoals, tasks])
+
+  return {
+    goalReports,
+    forgottenGoals,
+    unlinkedTasks,
+    trendData,
+    loading: goalsLoading || tasksLoading,
+  }
 }
