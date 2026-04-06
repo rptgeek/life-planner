@@ -59,20 +59,29 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3
+Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Calendar Preferences | 2/2 | In Progress (checkpoint pending) |  |
 | 2. Calendar View Rendering | 0/TBD | Not started | - |
-| 3. Task Sync Routing | 1/1 | Complete   | 2026-04-06 |
+| 3. Task Sync Routing | 1/1 | Complete    | 2026-04-06 |
+| 4. Goals & Values Reporting | 0/3 | Not started | - |
 
 ### Phase 4: Goals and Values task reporting dashboard
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** A /reports page showing goal-task metrics (open/completed/overdue counts, completion %, forgotten goals) and weekly trend charts, with sidebar navigation
+**Requirements**: RPT-01, RPT-02, RPT-03, RPT-04, RPT-05, RPT-06, RPT-07, RPT-08
 **Depends on:** Phase 3
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+  1. /reports page shows per-goal cards with open, completed, overdue counts and completion % progress bar
+  2. Goals with zero tasks are surfaced in an amber callout
+  3. Tasks with no goal appear in a collapsible "Unlinked Tasks" section
+  4. Weekly trend chart shows tasks completed per goal over time
+  5. Sidebar has a Reports nav entry
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 4 to break down)
+- [ ] 04-01-PLAN.md — Data layer: recharts install, report types, useReportData hook
+- [ ] 04-02-PLAN.md — UI components: GoalReportCard, ForgottenGoalsCallout, UnlinkedTasksSection, TrendChartsSection
+- [ ] 04-03-PLAN.md — Page assembly: /reports route, Sidebar nav entry, wire everything
