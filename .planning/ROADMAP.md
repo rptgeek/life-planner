@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Calendar Preferences** - Persist user's calendar display selection and default push target in Supabase
 - [ ] **Phase 2: Calendar View Rendering** - Fetch and display GCal events from selected calendars in the in-app view
-- [ ] **Phase 3: Task Sync Routing** - Route task create/update/delete operations to the configured default calendar
+- [x] **Phase 3: Task Sync Routing** - Route task create/update/delete operations to the configured default calendar (completed 2026-04-06)
 
 ## Phase Details
 
@@ -52,9 +52,9 @@ Plans:
   1. Creating a scheduled task pushes the event to the user's configured default calendar, not always `primary`
   2. Updating a scheduled task updates the event in whichever calendar it was originally pushed to
   3. Deleting or completing a scheduled task removes the event from the correct calendar
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 03-01-PLAN.md — Route GCal create/update/delete through configured default calendar
+- [x] 03-01-PLAN.md — Route GCal create/update/delete through configured default calendar
 
 ## Progress
 
@@ -65,7 +65,7 @@ Phases execute in numeric order: 1 → 2 → 3
 |-------|----------------|--------|-----------|
 | 1. Calendar Preferences | 2/2 | In Progress (checkpoint pending) |  |
 | 2. Calendar View Rendering | 0/TBD | Not started | - |
-| 3. Task Sync Routing | 0/1 | Not started | - |
+| 3. Task Sync Routing | 1/1 | Complete   | 2026-04-06 |
 
 ### Phase 4: Goals and Values task reporting dashboard
 

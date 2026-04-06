@@ -19,9 +19,9 @@
 
 ### Task → Google Calendar Sync
 
-- [ ] **SYNC-01**: When a task with a scheduled date/time is created, it is pushed to the user's configured default Google Calendar (not hardcoded `primary`)
-- [ ] **SYNC-02**: When a scheduled task is updated, the corresponding GCal event is updated in the correct calendar
-- [ ] **SYNC-03**: When a scheduled task is deleted/completed, the corresponding GCal event is removed
+- [x] **SYNC-01**: When a task with a scheduled date/time is created, it is pushed to the user's configured default Google Calendar (not hardcoded `primary`)
+- [x] **SYNC-02**: When a scheduled task is updated, the corresponding GCal event is updated in the correct calendar
+- [x] **SYNC-03**: When a scheduled task is deleted/completed, the corresponding GCal event is removed
 
 ## v2 Requirements
 
@@ -50,9 +50,9 @@
 | CAL-04 | Phase 1 | Complete |
 | VIEW-01 | Phase 2 | Pending |
 | VIEW-02 | Phase 2 | Pending |
-| SYNC-01 | Phase 2 | Pending |
-| SYNC-02 | Phase 2 | Pending |
-| SYNC-03 | Phase 2 | Pending |
+| SYNC-01 | Phase 2 | Complete |
+| SYNC-02 | Phase 2 | Complete |
+| SYNC-03 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 9 total

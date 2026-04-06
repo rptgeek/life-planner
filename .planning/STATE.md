@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-last_updated: "2026-04-05T22:05:00Z"
+status: Executing Phase 03
+last_updated: "2026-04-06T17:51:33.630Z"
 progress:
-  total_phases: 3
-  completed_phases: 0
-  total_plans: 2
-  completed_plans: 2
+  total_phases: 4
+  completed_phases: 2
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -18,7 +18,7 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-05)
 
 **Core value:** Tasks with scheduled times should appear in both the in-app calendar view and the user's Google Calendar, with full bidirectional awareness of which calendars matter.
-**Current focus:** Phase 01 — Calendar Preferences (plan 01-02 next)
+**Current focus:** Phase 03 — task-sync-routing
 
 ## Current Phase
 
@@ -41,6 +41,13 @@ See: `.planning/PROJECT.md` (updated 2026-04-05)
 - null vs [] distinction for selected_calendar_ids: null = never configured, [] = explicitly cleared
 - token passed as prop to CalendarPreferencesPanel (Settings page owns token lifecycle)
 - getCachedCalendarToken called in useEffect to avoid SSR window access errors
+- [Phase 03-task-sync-routing]: GCal sync routes through defaultPushId from useCalendarPreferences; null falls back to primary
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 4 added: Goals and Values task reporting dashboard
 
 ## Last Updated
 
