@@ -52,7 +52,7 @@ Exceptions: Touch targets for icon-only buttons minimum 44px (accessibility). Pr
 | Body | 14px | 400 (regular) | 1.5 |
 | Label | 12px | 600 (semibold) | 1.4 |
 | Heading | 20px | 600 (semibold) | 1.2 |
-| Display | 28px | 700 (bold) | 1.1 |
+| Display | 28px | 600 (semibold) | 1.1 |
 
 Notes:
 - Body: used for task titles, goal descriptions, chart tooltips
@@ -128,6 +128,7 @@ Components to build for this phase:
 - Header: "Unlinked Tasks (N)" — always visible count.
 - When expanded: flat list of task titles, each on its own row, `text-sm text-slate-700`.
 - Uses `ChevronDown` / `ChevronRight` from lucide-react for toggle (consistent with goals page pattern).
+- The chevron toggle button must carry an accessible label: `aria-label="Expand unlinked tasks"` when collapsed, `aria-label="Collapse unlinked tasks"` when expanded.
 
 ### Trend Charts Section
 
