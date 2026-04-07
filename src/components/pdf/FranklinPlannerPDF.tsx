@@ -397,12 +397,21 @@ function PrioritySection({
 export function FranklinPlannerPDF({ data }: { data: FranklinPlannerData }) {
   const { selectedDate, profile, tasks, reflection, calendarEvents = [] } = data
 
-  // Build a map: hour (0-23) → first event or timed task label for that hour
+  // Build a map: hour (0-23) → event label for that hour (spans multiple rows for multi-hour events)
   const hourLabels = new Map<number, string>()
   calendarEvents.forEach(e => {
     if (!e.start.dateTime) return
-    const h = new Date(e.start.dateTime).getHours()
-    if (!hourLabels.has(h)) hourLabels.set(h, e.summary.slice(0, 55))
+    const startH = new Date(e.start.dateTime).getHours()
+    const endDate = e.end?.dateTime ? new Date(e.end.dateTime) : null
+    const endH = endDate ? endDate.getHours() : startH
+    const endM = endDate ? endDate.getMinutes() : 0
+    // If end is exactly on the hour (e.g. 11:00), that hour is not occupied
+    const lastH = Math.min(endM === 0 ? endH - 1 : endH, 21)
+    for (let h = startH; h <= lastH; h++) {
+      if (!hourLabels.has(h)) {
+        hourLabels.set(h, h === startH ? e.summary.slice(0, 55) : `↳ ${e.summary.slice(0, 52)}`)
+      }
+    }
   })
   tasks.filter(t => t.start_time).forEach(t => {
     const h = parseInt(t.start_time!.split(':')[0])

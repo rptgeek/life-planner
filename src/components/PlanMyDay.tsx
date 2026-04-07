@@ -45,7 +45,14 @@ export default function PlanMyDay({ selectedDate, onClose, onTasksAdded }: PlanM
       .lt('scheduled_date', selectedDate)
       .eq('completed', false)
       .order('scheduled_date', { ascending: false })
-    setYesterdayTasks(data || [])
+    // Deduplicate by title — keep only the most recent version of each repeated task
+    const seen = new Set<string>()
+    const deduped = (data || []).filter(task => {
+      if (seen.has(task.title)) return false
+      seen.add(task.title)
+      return true
+    })
+    setYesterdayTasks(deduped)
   }, [user, selectedDate])
 
   useEffect(() => { fetchYesterdayTasks() }, [fetchYesterdayTasks])
