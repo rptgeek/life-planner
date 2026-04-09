@@ -64,8 +64,8 @@ export default function DashboardPage() {
   }
   const greeting = getGreeting()
 
-  const handleAddTask = async (task: Parameters<typeof addTask>[0]) => {
-    await addTask(task as Partial<Task>)
+  const handleAddTask = async (task: Partial<Task>) => {
+    await addTask(task)
   }
 
   const onDragEnd = (result: DropResult) => {
