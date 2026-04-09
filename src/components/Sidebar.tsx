@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Target, Compass, CalendarDays,
@@ -39,7 +40,8 @@ export default function Sidebar() {
         <button onClick={() => setMobileOpen(true)} className="text-white p-1">
           <Menu size={24} />
         </button>
-        <span className="ml-3 text-white font-semibold text-lg">Life Planner</span>
+        <Image src="/icon-192.png" alt="Life Planner" width={28} height={28} className="ml-3 rounded-md" />
+        <span className="ml-2 text-white font-semibold text-lg">Life Planner</span>
       </div>
 
       {/* Mobile overlay */}
@@ -60,11 +62,14 @@ export default function Sidebar() {
           {/* Header */}
           <div className={`p-3 border-b border-slate-700 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
             {!collapsed && (
-              <div className="min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <Image src="/icon-192.png" alt="Life Planner" width={32} height={32} className="rounded-lg flex-shrink-0" />
+                <div className="min-w-0">
                 <h1 className="text-xl font-bold truncate">Life Planner</h1>
                 <p className="text-slate-400 text-sm mt-0.5 truncate">
                   {profile?.display_name || 'Welcome'}
                 </p>
+                </div>
               </div>
             )}
             <div className="flex items-center gap-1">

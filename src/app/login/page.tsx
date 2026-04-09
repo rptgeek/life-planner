@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
-import { Target } from 'lucide-react'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
@@ -26,8 +26,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo / Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4">
-            <Target size={32} className="text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <Image src="/icon-192.png" alt="Life Planner" width={72} height={72} className="rounded-2xl" />
           </div>
           <h1 className="text-3xl font-bold text-white">Life Planner</h1>
           <p className="text-indigo-300 mt-2 text-sm">
