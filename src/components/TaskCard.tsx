@@ -372,7 +372,20 @@ export default function TaskCard({ task, orderNum, categories, roles, dragHandle
             )}
 
             <button
-              onClick={() => onDelete(task.id)}
+              onClick={async () => {
+                if (task.google_event_id) {
+                  const removeFromCal = window.confirm('Also remove this event from Google Calendar?')
+                  if (removeFromCal) {
+                    try {
+                      const token = getGoogleToken()
+                      if (token) await deleteCalendarEvent(token, task.google_event_id, defaultPushId ?? undefined)
+                    } catch (e) {
+                      console.error('Failed to remove calendar event:', e)
+                    }
+                  }
+                }
+                onDelete(task.id)
+              }}
               className="text-red-400 hover:text-red-600 p-1"
             >
               <Trash2 size={14} />
