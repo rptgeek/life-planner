@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Sparkles } from 'lucide-react'
+import { Plus, Sparkles, Clock } from 'lucide-react'
 import { Category, Goal, Role } from '@/lib/types'
 import { autoCategorize } from '@/lib/categorize'
 
@@ -19,6 +19,8 @@ interface TaskFormProps {
     role_id: string | null
     scheduled_date: string | null
     due_date: string | null
+    start_time: string | null
+    duration_minutes: number
   }) => Promise<void>
 }
 
@@ -31,6 +33,8 @@ export default function TaskForm({ categories, goals, roles, scheduledDate, onSu
   const [goalId, setGoalId] = useState<string>('')
   const [roleId, setRoleId] = useState<string>('')
   const [dueDate, setDueDate] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [durationMin, setDurationMin] = useState(30)
   const [autoSuggested, setAutoSuggested] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -60,6 +64,8 @@ export default function TaskForm({ categories, goals, roles, scheduledDate, onSu
       role_id: roleId || null,
       scheduled_date: scheduledDate || null,
       due_date: dueDate || null,
+      start_time: startTime ? startTime + ':00' : null,
+      duration_minutes: durationMin,
     })
     setTitle('')
     setDescription('')
@@ -68,6 +74,8 @@ export default function TaskForm({ categories, goals, roles, scheduledDate, onSu
     setGoalId('')
     setRoleId('')
     setDueDate('')
+    setStartTime('')
+    setDurationMin(30)
     setAutoSuggested(false)
     setExpanded(false)
     setSubmitting(false)
@@ -187,6 +195,31 @@ export default function TaskForm({ categories, goals, roles, scheduledDate, onSu
                 onChange={e => setDueDate(e.target.value)}
                 className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
               />
+            </div>
+
+            {/* Start Time */}
+            <div>
+              <label className="text-xs text-slate-500 block mb-1 flex items-center gap-1"><Clock size={11} />Start Time</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={e => setStartTime(e.target.value)}
+                className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
+              />
+            </div>
+
+            {/* Duration */}
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Duration</label>
+              <select
+                value={durationMin}
+                onChange={e => setDurationMin(Number(e.target.value))}
+                className="w-full text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
+              >
+                {[15, 30, 45, 60, 90, 120].map(m => (
+                  <option key={m} value={m}>{m} min</option>
+                ))}
+              </select>
             </div>
 
             {/* Role */}
