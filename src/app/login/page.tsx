@@ -65,6 +65,10 @@ export default function LoginPage() {
         <p className="text-center text-indigo-400/50 text-xs mt-8">
           Plan your life with intention
         </p>
+        <div className="flex justify-center gap-4 mt-3">
+          <a href="/privacy" className="text-xs text-indigo-400/60 hover:text-indigo-300 transition-colors">Privacy Policy</a>
+          <a href="/terms" className="text-xs text-indigo-400/60 hover:text-indigo-300 transition-colors">Terms of Service</a>
+        </div>
       </div>
     </div>
   )

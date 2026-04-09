@@ -391,6 +391,10 @@ export default function SettingsPage() {
           Built with Next.js, Supabase, and Tailwind CSS.
           Your data is stored securely in the cloud and synced across all your devices.
         </p>
+        <div className="flex gap-4 mt-3">
+          <a href="/privacy" className="text-xs text-indigo-500 hover:underline">Privacy Policy</a>
+          <a href="/terms" className="text-xs text-indigo-500 hover:underline">Terms of Service</a>
+        </div>
       </div>
     </div>
   )
