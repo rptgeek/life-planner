@@ -12,7 +12,9 @@ import TaskCard from '@/components/TaskCard'
 import DailyTimeLog from '@/components/DailyTimeLog'
 import PlanMyDay from '@/components/PlanMyDay'
 import PDFDownloadButton from '@/components/pdf/PDFDownloadButton'
-import { requestCalendarToken, preloadGIS } from '@/lib/useGoogleCalendarToken'
+import { requestCalendarToken, preloadGIS, getCachedCalendarToken } from '@/lib/useGoogleCalendarToken'
+import { createCalendarEvent, GoogleTokenExpiredError } from '@/lib/googleCalendar'
+import { useCalendarPreferences } from '@/lib/useCalendarPreferences'
 
 export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
@@ -24,6 +26,7 @@ export default function DashboardPage() {
   const { reflection, saveReflection } = useReflection(selectedDate)
   const { profile } = useProfile()
   const { events: calEvents, loading: calLoading, tokenExpired, refresh: calRefresh, calendarCount } = useGoogleCalendar(selectedDate)
+  const { defaultPushId } = useCalendarPreferences()
   const handleReconnectCalendar = async () => {
     try {
       await requestCalendarToken()
@@ -65,7 +68,21 @@ export default function DashboardPage() {
   const greeting = getGreeting()
 
   const handleAddTask = async (task: Partial<Task>) => {
-    await addTask(task)
+    const newTask = await addTask(task)
+    // Auto-sync to Google Calendar if task has both a date and start time
+    if (newTask && newTask.scheduled_date && newTask.start_time) {
+      const token = getCachedCalendarToken()
+      if (token) {
+        try {
+          const augmented = newTask as Task & { start_time: string; duration_minutes: number }
+          const eventId = await createCalendarEvent(token, augmented, defaultPushId ?? undefined)
+          await updateTask(newTask.id, { google_event_id: eventId })
+          calRefresh()
+        } catch (e) {
+          if (!(e instanceof GoogleTokenExpiredError)) console.error('Auto-sync failed:', e)
+        }
+      }
+    }
   }
 
   const onDragEnd = (result: DropResult) => {
