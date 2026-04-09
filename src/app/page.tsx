@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Compass, Target, ListTodo, CalendarDays, BarChart2, Heart, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -73,9 +74,7 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur border-b border-slate-100">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <Target size={15} className="text-white" />
-            </div>
+            <Image src="/icon-192.png" alt="Life Planner" width={28} height={28} className="rounded-lg" />
             <span className="font-bold text-slate-800">Life Planner</span>
           </div>
           <Link
@@ -177,9 +176,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-8 px-6 bg-slate-900 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center">
-            <Target size={13} className="text-white" />
-          </div>
+          <Image src="/icon-192.png" alt="Life Planner" width={24} height={24} className="rounded-md" />
           <span className="text-sm font-semibold text-white">Life Planner</span>
         </div>
         <p className="text-xs text-slate-500">Plan your day. Achieve your goals. Live your mission.</p>
