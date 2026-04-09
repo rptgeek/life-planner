@@ -67,9 +67,9 @@ export default function DailyTimeLog({
   const allDayEvents = useMemo(() => events.filter(e => e.allDay), [events])
   const timedEvents  = useMemo(() => events.filter(e => !e.allDay && e.start.dateTime), [events])
 
-  // Timed tasks (have start_time and scheduled_date)
+  // Timed tasks (have start_time but NOT synced to Google Calendar — those show as calEvents)
   const timedTasks = useMemo(
-    () => tasks.filter(t => t.start_time && !t.completed),
+    () => tasks.filter(t => t.start_time && !t.completed && !t.google_event_id),
     [tasks]
   )
 
