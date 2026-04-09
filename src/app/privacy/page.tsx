@@ -125,8 +125,8 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-slate-800 mb-3">10. Contact</h2>
             <p>
               For questions about this privacy policy or to request data deletion, contact us at:{' '}
-              <a href="mailto:garypope@gmail.com" className="text-indigo-600 hover:underline">
-                garypope@gmail.com
+              <a href="mailto:rptgeek@gmail.com" className="text-indigo-600 hover:underline">
+                rptgeek@gmail.com
               </a>
             </p>
           </section>
