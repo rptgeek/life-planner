@@ -83,7 +83,10 @@ function taskToEventBody(task: Task & { start_time: string; duration_minutes: nu
   const startDt = new Date(`${date}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`)
   const endDt = new Date(startDt.getTime() + task.duration_minutes * 60_000)
 
-  const fmt = (d: Date) => d.toISOString().replace('Z', '') // strip Z — we supply timeZone separately
+  // Format using local time getters — NOT toISOString() which gives UTC
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 
   return {
     summary: task.title,
