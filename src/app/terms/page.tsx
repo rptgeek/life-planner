@@ -116,8 +116,8 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-slate-800 mb-3">11. Contact</h2>
             <p>
               Questions about these terms? Contact us at:{' '}
-              <a href="mailto:rptgeek@gmail.com" className="text-indigo-600 hover:underline">
-                rptgeek@gmail.com
+              <a href="mailto:rptgeek+lifeplanner@gmail.com" className="text-indigo-600 hover:underline">
+                rptgeek+lifeplanner@gmail.com
               </a>
             </p>
           </section>
