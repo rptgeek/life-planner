@@ -32,6 +32,9 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true },
   },
   manifest: '/manifest.json',
+  verification: {
+    google: 'tDzPZx64msC8tAPYUWbCX7knxSsgrmtJ5zt2YOoE7j4',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

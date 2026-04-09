@@ -180,6 +180,10 @@ export default function LandingPage() {
           <span className="text-sm font-semibold text-white">Life Planner</span>
         </div>
         <p className="text-xs text-slate-500">Plan your day. Achieve your goals. Live your mission.</p>
+        <div className="flex justify-center gap-4 mt-3">
+          <a href="/privacy" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Privacy Policy</a>
+          <a href="/terms" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Terms of Service</a>
+        </div>
       </footer>
 
     </div>
