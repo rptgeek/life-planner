@@ -43,14 +43,15 @@ export default function PlanMyDay({ selectedDate, onClose, onTasksAdded }: PlanM
       .select('*, category:categories(*), role:roles(*)')
       .eq('user_id', user.id)
       .lt('scheduled_date', selectedDate)
-      .eq('completed', false)
       .order('scheduled_date', { ascending: false })
-    // Deduplicate by title — keep only the most recent version of each repeated task
+    // Deduplicate by title — keep only the most recent version of each task.
+    // If the most recent version was completed, exclude it entirely so previously
+    // checked-off tasks don't reappear here.
     const seen = new Set<string>()
     const deduped = (data || []).filter(task => {
       if (seen.has(task.title)) return false
       seen.add(task.title)
-      return true
+      return !task.completed
     })
     setYesterdayTasks(deduped)
   }, [user, selectedDate])
