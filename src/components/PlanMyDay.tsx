@@ -325,7 +325,18 @@ export default function PlanMyDay({ selectedDate, onClose, onTasksAdded }: PlanM
                 </div>
               ) : (
                 <>
-                  <p className="text-xs text-slate-500">Select tasks to carry forward:</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-slate-500">Select tasks to carry forward:</p>
+                    <button
+                      onClick={() => {
+                        const allSelected = yesterdayTasks.every(t => selectedCarryForward.has(t.id))
+                        setSelectedCarryForward(allSelected ? new Set() : new Set(yesterdayTasks.map(t => t.id)))
+                      }}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+                    >
+                      {yesterdayTasks.every(t => selectedCarryForward.has(t.id)) ? 'Deselect all' : 'Select all'}
+                    </button>
+                  </div>
                   {yesterdayTasks.map(task => (
                     <button
                       key={task.id}
